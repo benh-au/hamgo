@@ -1,6 +1,7 @@
 package node
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/donothingloop/hamgo/lib"
@@ -86,6 +87,11 @@ func (n *Node) handleCallbacks(msg *protocol.Message) {
 
 // SpreadMessage spreads a message by gossip.
 func (n *Node) SpreadMessage(msg *protocol.Message) error {
+	if n.settings.LogicSettings.ReadOnly {
+		logrus.Warn("Node: node is read-only, ignoring spread message")
+		return errors.New("read-only node")
+	}
+
 	n.pushToCache(msg)
 	go n.handleCallbacks(msg)
 
