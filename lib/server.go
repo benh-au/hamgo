@@ -25,7 +25,7 @@ func (t *TCPServer) worker() {
 			continue
 		}
 
-		logrus.Debug("TCPServer: new connection")
+		logrus.Infof("TCPServer: new connection: %s", conn.RemoteAddr().String())
 
 		// create a new connection
 		c := Connection{

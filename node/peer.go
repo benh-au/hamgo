@@ -116,7 +116,7 @@ func (p *Peer) readWorker() {
 
 // reconnect the connection.
 func (p *Peer) reconnect() {
-	logrus.Debug("Peer: reconnecting")
+	logrus.Info("Peer: reconnecting")
 
 	conn, err := p.client.Start()
 	if err != nil {

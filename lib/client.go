@@ -15,7 +15,7 @@ type TCPClient struct {
 
 // Start the connection.
 func (c *TCPClient) Start() (*Connection, error) {
-	logrus.Debugf("TCPClient: connecting to %s:%d", c.Host, c.Port)
+	logrus.Infof("TCPClient: connecting to %s:%d", c.Host, c.Port)
 
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, c.Port))
 	if err != nil {
@@ -23,7 +23,7 @@ func (c *TCPClient) Start() (*Connection, error) {
 		return nil, err
 	}
 
-	logrus.Debug("TCPClient: connection established")
+	logrus.Info("TCPClient: connection established")
 
 	co := Connection{
 		Connection: conn,

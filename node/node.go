@@ -35,13 +35,14 @@ func (n *Node) handleCallbacks(msg *protocol.Message) {
 
 // SpreadMessage spreads a message by gossip.
 func (n *Node) SpreadMessage(msg *protocol.Message) error {
-	go n.handleCallbacks(msg)
-
 	return n.logic.SpreadMessage(msg)
 }
 
 // handleMessage handles a message from a peer.
 func (n *Node) handleMessage(msg []byte) {
+	pmsg := protocol.ParseMessage(msg)
+	go n.handleCallbacks(&pmsg)
+
 	n.logic.HandleMessage(msg)
 }
 
@@ -116,7 +117,7 @@ func (n *Node) handleConnection(conn *lib.Connection) {
 	p := n.findPeerByConn(conn)
 
 	if p == nil {
-		logrus.Debug("Node: creating new peer")
+		logrus.Info("Node: creating new peer")
 		np := NewPeer(conn.Connection.RemoteAddr().String(), n.settings.Port, n.settings)
 		np.fromServer = true
 		np.Start()
