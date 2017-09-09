@@ -2,8 +2,9 @@ package node
 
 import (
 	"errors"
-	"hamgo/parameters"
-	"hamgo/protocol"
+
+	"github.com/donothingloop/hamgo/parameters"
+	"github.com/donothingloop/hamgo/protocol"
 
 	"github.com/Sirupsen/logrus"
 )

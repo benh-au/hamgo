@@ -2,8 +2,9 @@ package rest
 
 import (
 	"fmt"
-	"hamgo/node"
-	"hamgo/parameters"
+
+	"github.com/donothingloop/hamgo/node"
+	"github.com/donothingloop/hamgo/parameters"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo/middleware"

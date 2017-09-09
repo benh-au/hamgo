@@ -1,6 +1,6 @@
 package rest
 
-import "hamgo/protocol"
+import "github.com/donothingloop/hamgo/protocol"
 
 // Contact for the rest api.
 type Contact struct {

@@ -1,8 +1,9 @@
 package rest
 
 import (
-	"hamgo/protocol"
 	"net"
+
+	"github.com/donothingloop/hamgo/protocol"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"

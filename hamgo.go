@@ -1,7 +1,7 @@
 package main
 
 import (
-	"hamgo/cmd"
+	"github.com/donothingloop/hamgo/cmd"
 )
 
 func main() {

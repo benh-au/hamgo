@@ -1,9 +1,9 @@
 package node
 
 import (
-	"hamgo/lib"
-	"hamgo/parameters"
-	"hamgo/protocol"
+	"github.com/donothingloop/hamgo/lib"
+	"github.com/donothingloop/hamgo/parameters"
+	"github.com/donothingloop/hamgo/protocol"
 
 	"github.com/Sirupsen/logrus"
 )

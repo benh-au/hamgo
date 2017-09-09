@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"hamgo/parameters"
+	"github.com/donothingloop/hamgo/parameters"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"

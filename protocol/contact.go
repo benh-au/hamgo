@@ -2,7 +2,8 @@ package protocol
 
 import (
 	"bytes"
-	"hamgo/parameters"
+
+	"github.com/donothingloop/hamgo/parameters"
 )
 
 // ContactType defines the type of the contact.

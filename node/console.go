@@ -1,7 +1,7 @@
 package node
 
 import (
-	"hamgo/protocol"
+	"github.com/donothingloop/hamgo/protocol"
 
 	"github.com/Sirupsen/logrus"
 )

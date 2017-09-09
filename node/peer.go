@@ -1,10 +1,11 @@
 package node
 
 import (
-	"hamgo/lib"
-	"hamgo/parameters"
 	"sync"
 	"time"
+
+	"github.com/donothingloop/hamgo/lib"
+	"github.com/donothingloop/hamgo/parameters"
 
 	"github.com/Sirupsen/logrus"
 )

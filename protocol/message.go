@@ -2,7 +2,8 @@ package protocol
 
 import (
 	"encoding/binary"
-	"hamgo/parameters"
+
+	"github.com/donothingloop/hamgo/parameters"
 )
 
 // PayloadType defines the type of the payload

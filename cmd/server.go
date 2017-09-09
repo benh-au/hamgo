@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"hamgo/node"
-	"hamgo/parameters"
-	"hamgo/protocol"
-	"hamgo/rest"
 	"time"
+
+	"github.com/donothingloop/hamgo/node"
+	"github.com/donothingloop/hamgo/parameters"
+	"github.com/donothingloop/hamgo/protocol"
+	"github.com/donothingloop/hamgo/rest"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"

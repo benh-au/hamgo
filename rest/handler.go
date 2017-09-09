@@ -1,6 +1,6 @@
 package rest
 
-import "hamgo/node"
+import "github.com/donothingloop/hamgo/node"
 
 // Handler stores handlers for the rest server.
 type Handler struct {

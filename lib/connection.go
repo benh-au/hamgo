@@ -3,8 +3,9 @@ package lib
 import (
 	"bufio"
 	"errors"
-	"hamgo/parameters"
 	"net"
+
+	"github.com/donothingloop/hamgo/parameters"
 
 	"github.com/Sirupsen/logrus"
 )
