@@ -58,6 +58,10 @@ func (n *Logic) SpreadMessage(msg *protocol.Message) error {
 
 	logrus.Debug("Logic: spreading new message")
 
+	// append local node to path
+	msg.Path += ";" + n.settingsStation.Callsign
+	msg.PathLength = uint16(len(msg.Path))
+
 	if !n.isMessageCached(msg) {
 		n.cacheMessage(msg)
 		n.spreadCachedMessage(msg)
