@@ -29,6 +29,7 @@ func (r *Server) Init(n *node.Node) {
 	logrus.Debug("RESTServer: starting")
 
 	e := echo.New()
+	e.HideBanner = true
 
 	if !r.settings.CORS {
 		logrus.Debug("RESTServer: cors middleware enabled")
