@@ -60,10 +60,10 @@ func (n *Node) existsInCache(msg *protocol.Message) bool {
 // pushToCache pushes a message to cache if it does not exist in it
 func (n *Node) pushToCache(msg *protocol.Message) bool {
 	n.cacheLock.Lock()
+	defer n.cacheLock.Unlock()
 
 	if n.existsInCache(msg) {
 		logrus.Debug("Node: message already cached, ignoring")
-		n.cacheLock.Unlock()
 		return false
 	}
 
@@ -73,7 +73,6 @@ func (n *Node) pushToCache(msg *protocol.Message) bool {
 	}
 
 	n.Cache = append(n.Cache, msg)
-	n.cacheLock.Unlock()
 	return true
 }
 
@@ -106,7 +105,12 @@ func (n *Node) SpreadMessage(msg *protocol.Message) error {
 // handleMessage handles a message from a peer.
 func (n *Node) handleMessage(msg []byte) {
 	pmsg := protocol.ParseMessage(msg)
-	n.pushToCache(&pmsg)
+
+	// message already cached, ignoring
+	if !n.pushToCache(&pmsg) {
+		return
+	}
+
 	go n.handleCallbacks(&pmsg)
 
 	n.logic.HandleMessage(msg)
