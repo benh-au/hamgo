@@ -1,0 +1,21 @@
+{
+    "node": {
+        "port": 9124,
+        "peerQueueSize": 2048,
+        "retries": 5,
+        "peers": [
+            {
+                "host": "",
+                "port": 9124
+            }
+        ],
+        "reconnectTimeout": 5,
+        "logic": {
+            "cacheSize": 2048
+        }
+    },
+    "rest": {
+        "port": 9125,
+        "cors": false
+    }
+}
