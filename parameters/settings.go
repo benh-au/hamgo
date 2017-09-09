@@ -10,6 +10,7 @@ type PeerSettings struct {
 type LogicSettings struct {
 	// CacheSize in messages
 	CacheSize uint `json:"cacheSize"`
+	ReadOnly  bool `json:"readonly,omitempty"`
 }
 
 // Settings stores the settings of the node.

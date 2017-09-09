@@ -52,6 +52,11 @@ func (n *Logic) cacheMessage(msg *protocol.Message) {
 
 // SpreadMessage caches a new message and spreads it afterwards.
 func (n *Logic) SpreadMessage(msg *protocol.Message) error {
+	if n.settings.ReadOnly {
+		logrus.Warn("Logic: node is read-only, ignoring spread message")
+		return errors.New("read-only node")
+	}
+
 	if n.isMessageCached(msg) {
 		return errors.New("message already cached")
 	}

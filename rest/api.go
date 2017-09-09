@@ -132,6 +132,8 @@ func (h *Handler) ws(c echo.Context) error {
 		}
 	}
 
+	// TODO: implement send support from websocket
+
 	cd := &node.MessageCallback{
 		Cb: cb,
 	}
