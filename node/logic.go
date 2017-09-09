@@ -16,9 +16,10 @@ type cacheEntry struct {
 
 // Logic handles the forwarding of the nodes.
 type Logic struct {
-	settings parameters.LogicSettings
-	cache    []*cacheEntry
-	peers    []*Peer
+	settings        parameters.LogicSettings
+	settingsStation parameters.Station
+	cache           []*cacheEntry
+	peers           []*Peer
 }
 
 func (n *Logic) isMessageCached(msg *protocol.Message) bool {
@@ -86,6 +87,10 @@ func (n *Logic) HandleMessage(msg []byte) {
 
 	// check if the message is not cached and relay it, otherwise ignore it
 	if !n.isMessageCached(&m) {
+
+		// append local node to path
+		m.Path += ";" + n.settingsStation.Callsign
+		m.PathLength = uint16(len(m.Path))
 
 		// cache message
 		n.cacheMessage(&m)

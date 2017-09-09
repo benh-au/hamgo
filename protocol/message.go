@@ -11,7 +11,8 @@ type PayloadType uint16
 
 // Payload types.
 const (
-	PayloadCQ = 0
+	PayloadCQ    = 0
+	PayloadDebug = 1
 )
 
 // Message is a message in the transport.
@@ -19,6 +20,8 @@ type Message struct {
 	Version       uint16
 	SeqCounter    uint16
 	Source        Contact
+	PathLength    uint16
+	Path          string
 	PayloadType   PayloadType
 	PayloadLenght uint8
 	Payload       []byte
@@ -38,6 +41,12 @@ func (m *Message) Bytes() []byte {
 	cb := m.Source.Bytes()
 	copy(buf[idx:], cb)
 	idx += len(cb)
+
+	binary.LittleEndian.PutUint16(buf[idx:], m.PathLength)
+	idx += 2
+
+	copy(buf[idx:], []byte(m.Path))
+	idx += len(m.Path)
 
 	buf[idx] = uint8(m.PayloadType)
 	idx++
@@ -66,6 +75,12 @@ func ParseMessage(buf []byte) Message {
 	buf = rbuf
 	idx = 0
 	msg.Source = ct
+
+	msg.PathLength = binary.LittleEndian.Uint16(buf[idx:])
+	idx += 2
+
+	msg.Path = string(buf[idx : idx+int(msg.PathLength)])
+	idx += int(msg.PathLength)
 
 	msg.PayloadType = PayloadType(buf[idx])
 	idx++

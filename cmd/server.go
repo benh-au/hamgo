@@ -31,7 +31,7 @@ func executeServer(cmd *cobra.Command, args []string) {
 
 	sett := config.Node
 
-	n, err := node.NewNode(sett)
+	n, err := node.NewNode(sett, config.Station)
 
 	if err != nil {
 		logrus.WithError(err).Warn("Failed to create node")

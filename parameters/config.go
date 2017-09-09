@@ -9,8 +9,9 @@ import (
 
 // Config stores the configuration for the servers.
 type Config struct {
-	REST RESTSettings `json:"rest"`
-	Node Settings     `json:"node"`
+	REST    RESTSettings `json:"rest"`
+	Node    Settings     `json:"node"`
+	Station Station      `json:"station"`
 }
 
 // ReadConfig reads the configuration JSON file.

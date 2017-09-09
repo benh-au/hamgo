@@ -17,5 +17,8 @@
     "rest": {
         "port": 9125,
         "cors": false
+    },
+    "station": {
+        "callsign": "NOCALL"
     }
 }

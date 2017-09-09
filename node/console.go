@@ -16,5 +16,6 @@ func (n *Node) consoleHandler(msg *protocol.Message) {
 		"Payload Lenght":  msg.PayloadLenght,
 		"Payload Type":    msg.PayloadType,
 		"Payload":         string(msg.Payload),
+		"Path":            string(msg.Path),
 	}).Info("message received")
 }

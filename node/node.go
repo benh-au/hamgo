@@ -153,7 +153,7 @@ func (n *Node) connectionWorker() {
 }
 
 // NewNode creates a new node.
-func NewNode(settings parameters.Settings) (*Node, error) {
+func NewNode(settings parameters.Settings, station parameters.Station) (*Node, error) {
 	logrus.Debug("Node: creating new instance")
 
 	n := &Node{
@@ -162,7 +162,8 @@ func NewNode(settings parameters.Settings) (*Node, error) {
 			Port: settings.Port,
 		},
 		logic: &Logic{
-			settings: settings.LogicSettings,
+			settings:        settings.LogicSettings,
+			settingsStation: station,
 		},
 	}
 
