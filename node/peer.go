@@ -24,13 +24,14 @@ type Peer struct {
 	Received         chan []byte
 	client           *lib.TCPClient
 	fromServer       bool
+	checkPending     bool
 }
 
 // NewPeer creates a new peer.
 func NewPeer(host string, port uint, settings parameters.Settings) *Peer {
 	return &Peer{
 		Settings:        settings,
-		checkMessages:   make(chan interface{}),
+		checkMessages:   make(chan interface{}, 10),
 		connActiveClose: make(chan interface{}),
 		sendTries:       0,
 		Received:        make(chan []byte),
@@ -132,8 +133,12 @@ func (p *Peer) reconnect() {
 
 	p.connActiveClose = make(chan interface{})
 
-	// signal to check new messages
-	p.checkMessages <- nil
+	if !p.checkPending {
+		p.checkPending = true
+
+		// signal to check new messages
+		p.checkMessages <- nil
+	}
 
 	// start the read worker
 	go p.readWorker()
@@ -152,7 +157,10 @@ func (p *Peer) SetConnection(conn *lib.Connection) {
 	p.connectionActive = true
 	p.connActiveClose = make(chan interface{})
 
-	p.checkMessages <- nil
+	if !p.checkPending {
+		p.checkPending = true
+		p.checkMessages <- nil
+	}
 
 	go p.readWorker()
 }
@@ -212,6 +220,8 @@ func (p *Peer) worker() {
 
 		// wait for a signal
 		<-p.checkMessages
+
+		p.checkPending = false
 	}
 }
 
@@ -226,6 +236,10 @@ func (p *Peer) QueueMessage(msg []byte) {
 
 	logrus.WithField("msg", msg).Debug("Peer: queueed peer message")
 
-	// send the check signal
-	p.checkMessages <- nil
+	if !p.checkPending {
+		p.checkPending = true
+
+		// send the check signal
+		p.checkMessages <- nil
+	}
 }
