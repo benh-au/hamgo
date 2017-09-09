@@ -11,7 +11,8 @@
         ],
         "reconnectTimeout": 5,
         "logic": {
-            "cacheSize": 2048
+            "cacheSize": 2048,
+            "readonly": false
         }
     },
     "rest": {
