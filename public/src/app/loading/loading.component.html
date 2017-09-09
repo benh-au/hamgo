@@ -1,0 +1,7 @@
+<alert type="info" *ngIf="loading && !error">
+  <i class="fa fa-fw fa-spinner fa-spin"></i> <strong>Loading...</strong> Please
+  wait...
+</alert>
+<alert type="danger" *ngIf="error">
+  <i class="fa fa-fw fa-exclamation-triangle"></i> {{error}}
+</alert>

@@ -1,14 +1,14 @@
-import { HamgoPage } from './app.po';
+import { NetStatusPage } from './app.po';
 
-describe('hamgo App', () => {
-  let page: HamgoPage;
+describe('net-status App', () => {
+  let page: NetStatusPage;
 
   beforeEach(() => {
-    page = new HamgoPage();
+    page = new NetStatusPage();
   });
 
-  it('should display welcome message', () => {
+  it('should display message saying app works', () => {
     page.navigateTo();
-    expect(page.getParagraphText()).toEqual('Welcome to app!');
+    expect(page.getParagraphText()).toEqual('app works!');
   });
 });

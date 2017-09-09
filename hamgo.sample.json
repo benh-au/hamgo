@@ -16,7 +16,8 @@
     },
     "rest": {
         "port": 9125,
-        "cors": false
+        "cors": false,
+        "frontend": "public/"
     },
     "station": {
         "callsign": "NOCALL"

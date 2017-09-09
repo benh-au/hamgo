@@ -40,7 +40,7 @@ func (r *Server) Init(n *node.Node) {
 	e.Use(middleware.Recover())
 	hndlr.registerAPI(e.Group("/api"))
 
-	e.Static("/", "./public/dist/")
+	e.Static("/", r.settings.Frontend)
 
 	port := r.settings.Port
 	err := e.Start(fmt.Sprintf(":%d", port))

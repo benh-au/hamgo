@@ -10,3 +10,7 @@ release:
 	mv hamgo dist/hamgo.mipsle
 	GOARCH=arm go build
 	mv hamgo dist/hamgo.arm
+	tar cvzf dist/frontend.tar.gz public/dist
+
+clean:
+	rm -rf dist

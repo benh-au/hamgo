@@ -7,13 +7,14 @@
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es5",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
     "lib": [
-      "es2016",
-      "dom"
+      "es2016"
     ]
-  }
+  },
+  "filesGlob": [
+    "**/*.ts",
+		"!node_modules/**",
+		"node_modules/@types/**/*.d.ts",
+		"node_modules/@angular/**/*.d.ts"
+  ]
 }

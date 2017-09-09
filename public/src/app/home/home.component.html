@@ -1,0 +1,60 @@
+<div class="container">
+  <h4>HamGO - Server Status</h4>
+  <h5>Resource and user discovery for HAMNET based on a gossip protocol</h5>
+  <br><br>
+
+  <button class="btn btn-primary" (click)="showSend = true" *ngIf="!showSend">Send message</button>
+
+  <div *ngIf="showSend">
+    <div class="card p-4">
+      <div class="card-block">
+        <b>Send CQ message</b>
+        <br><br>
+
+        <div class="form-group">
+          <label for="callsign">Callsign</label>
+          <input type="text" name="callsign" class="form-control" [(ngModel)]="callsign">
+        </div>
+
+        <div class="form-group">
+          <label for="ip">IP Address</label>
+          <input type="text" name="ip" class="form-control" [(ngModel)]="ip">
+        </div>
+
+        <div class="form-group">
+          <label for="callsign">Message</label>
+          <input type="text" name="message" class="form-control" [(ngModel)]="message">
+        </div>
+
+        <button class="btn btn-success" (click)="send()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <br><br>
+
+  <app-loading [state]="loading"></app-loading>
+
+  <div class="row" *ngIf="!loading">
+    <table class="table table-striped thead-inverse">
+      <thead>
+        <th><b>Callsign</b></th>
+        <th>Type</th>
+        <th>IPs</th>
+        <th>Sequence</th>
+        <th>Message</th>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of msgs">
+          <td>{{m.contact.callsign}}</td>
+          <td>{{(m.contact.type==0)?'User':'Station'}}</td>
+          <td>
+            <div *ngFor="let ip of m.contact.ips">{{ip}}</div>
+          </td>
+          <td>{{m.sequence}}</td>
+          <td>{{m.message}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,6 +1,6 @@
-import { browser, by, element } from 'protractor';
+import { browser, element, by } from 'protractor';
 
-export class HamgoPage {
+export class NetStatusPage {
   navigateTo() {
     return browser.get('/');
   }
