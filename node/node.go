@@ -17,17 +17,32 @@ type Node struct {
 	peers     []*Peer
 	logic     *Logic
 	close     chan interface{}
-	cbs       []MessageCallback
+	cbs       []*MessageCallback
 	Cache     []*protocol.Message
 	cacheLock sync.Mutex
 }
 
 // MessageCallback is a callback that is called when a message was received.
-type MessageCallback func(*protocol.Message)
+type MessageCallback struct {
+	Cb func(*protocol.Message)
+}
 
 // AddCallback adds a callback for received messages.
-func (n *Node) AddCallback(cb MessageCallback) {
+func (n *Node) AddCallback(cb *MessageCallback) {
 	n.cbs = append(n.cbs, cb)
+}
+
+// RemoveCallback removes the callback from the buffer.
+func (n *Node) RemoveCallback(cb *MessageCallback) {
+	var cbs []*MessageCallback
+
+	for _, v := range n.cbs {
+		if v != cb {
+			cbs = append(cbs, v)
+		}
+	}
+
+	n.cbs = cbs
 }
 
 // existsInCache checks if a given message exists in the cache.
@@ -62,14 +77,18 @@ func (n *Node) pushToCache(msg *protocol.Message) {
 
 // handleCallbacks calls all registered callbacks that hook the received messages.
 func (n *Node) handleCallbacks(msg *protocol.Message) {
+	n.consoleHandler(msg)
+
 	for _, v := range n.cbs {
-		v(msg)
+		v.Cb(msg)
 	}
 }
 
 // SpreadMessage spreads a message by gossip.
 func (n *Node) SpreadMessage(msg *protocol.Message) error {
 	n.pushToCache(msg)
+	go n.handleCallbacks(msg)
+
 	return n.logic.SpreadMessage(msg)
 }
 
@@ -218,9 +237,6 @@ func NewNode(settings parameters.Settings, station parameters.Station) (*Node, e
 
 	// start the connection worker for the server
 	go n.connectionWorker()
-
-	// register handlers
-	n.AddCallback(n.consoleHandler)
 
 	return n, nil
 }

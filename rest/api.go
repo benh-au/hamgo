@@ -4,13 +4,20 @@ import (
 	"net"
 	"strconv"
 
+	"github.com/donothingloop/hamgo/node"
+
 	"github.com/donothingloop/hamgo/protocol"
+	"github.com/gorilla/websocket"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 )
 
 const protocolVersion = 1
+
+var (
+	upgrader = websocket.Upgrader{}
+)
 
 // spread a cqmessage
 func (h *Handler) cqmessage(c echo.Context) error {
@@ -104,9 +111,43 @@ func (h *Handler) cache(c echo.Context) error {
 	return c.String(200, response)
 }
 
+func (h *Handler) ws(c echo.Context) error {
+	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	if err != nil {
+		return err
+	}
+
+	defer ws.Close()
+
+	closech := make(chan interface{})
+
+	cb := func(msg *protocol.Message) {
+		logrus.Info("REST: sending message to websocket")
+
+		str := messageToJSON(msg)
+		err := ws.WriteMessage(websocket.TextMessage, []byte(str))
+
+		if err != nil {
+			close(closech)
+		}
+	}
+
+	cd := &node.MessageCallback{
+		Cb: cb,
+	}
+
+	h.node.AddCallback(cd)
+	defer h.node.RemoveCallback(cd)
+
+	<-closech
+
+	return nil
+}
+
 func (h *Handler) registerAPI(e *echo.Group) {
 	spread := e.Group("/spread")
 	spread.POST("/cq", h.cqmessage)
 
 	e.GET("/cache", h.cache)
+	e.GET("/ws", h.ws)
 }
