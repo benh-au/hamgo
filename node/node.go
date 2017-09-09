@@ -58,13 +58,13 @@ func (n *Node) existsInCache(msg *protocol.Message) bool {
 }
 
 // pushToCache pushes a message to cache if it does not exist in it
-func (n *Node) pushToCache(msg *protocol.Message) {
+func (n *Node) pushToCache(msg *protocol.Message) bool {
 	n.cacheLock.Lock()
 
 	if n.existsInCache(msg) {
 		logrus.Debug("Node: message already cached, ignoring")
 		n.cacheLock.Unlock()
-		return
+		return false
 	}
 
 	// remove first cache entry, if cache is full
@@ -74,6 +74,7 @@ func (n *Node) pushToCache(msg *protocol.Message) {
 
 	n.Cache = append(n.Cache, msg)
 	n.cacheLock.Unlock()
+	return true
 }
 
 // handleCallbacks calls all registered callbacks that hook the received messages.
@@ -92,7 +93,11 @@ func (n *Node) SpreadMessage(msg *protocol.Message) error {
 		return errors.New("read-only node")
 	}
 
-	n.pushToCache(msg)
+	// message already cached, ignoring
+	if !n.pushToCache(msg) {
+		return nil
+	}
+
 	go n.handleCallbacks(msg)
 
 	return n.logic.SpreadMessage(msg)
