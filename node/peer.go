@@ -63,6 +63,7 @@ func (p *Peer) writeCallback(conn *lib.Connection, err error) {
 
 		p.sendTries = 0
 
+		logrus.WithField("queuelen", len(p.queue)).Debug("Peer: queuelen after")
 		logrus.Debug("Peer: message sent successfully, removed from queue")
 	} else {
 		p.sendTries++
@@ -180,14 +181,18 @@ func (p *Peer) reconnectWorker() {
 func (p *Peer) worker() {
 	for {
 		for {
+			p.writeLock.Lock()
+
 			// if the connection is not active anymore, wait for a checkMessages signal
 			if !p.connectionActive {
+				p.writeLock.Unlock()
 				logrus.Debug("Peer: worker: connection not active")
 				break
 			}
 
 			// if the queue is empty, wait for the signal
 			if len(p.queue) == 0 {
+				p.writeLock.Unlock()
 				logrus.Debug("Peer: worker: queue is empty")
 				break
 			}
@@ -198,7 +203,6 @@ func (p *Peer) worker() {
 			}
 
 			logrus.Debug("Peer: worker: acquiring lock")
-			p.writeLock.Lock()
 
 			logrus.Debug("Peer: worker: sending message")
 			p.connection.Send <- msg
