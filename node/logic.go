@@ -2,6 +2,7 @@ package node
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/donothingloop/hamgo/parameters"
 	"github.com/donothingloop/hamgo/protocol"
@@ -62,6 +63,11 @@ func (n *Logic) SpreadMessage(msg *protocol.Message) error {
 	}
 
 	logrus.Debug("Logic: spreading new message")
+
+	if strings.Contains(msg.Path, n.settingsStation.Callsign) {
+		logrus.Info("Logic: path already contains this station, ignoring pacakge")
+		return nil
+	}
 
 	// append local node to path
 	msg.Path += ";" + n.settingsStation.Callsign
