@@ -1,6 +1,8 @@
 package node
 
 import (
+	"sync"
+
 	"github.com/donothingloop/hamgo/lib"
 	"github.com/donothingloop/hamgo/parameters"
 	"github.com/donothingloop/hamgo/protocol"
@@ -10,12 +12,14 @@ import (
 
 // Node is a node in the gossip protocol.
 type Node struct {
-	server   lib.TCPServer
-	settings parameters.Settings
-	peers    []*Peer
-	logic    *Logic
-	close    chan interface{}
-	cbs      []MessageCallback
+	server    lib.TCPServer
+	settings  parameters.Settings
+	peers     []*Peer
+	logic     *Logic
+	close     chan interface{}
+	cbs       []MessageCallback
+	Cache     []*protocol.Message
+	cacheLock sync.Mutex
 }
 
 // MessageCallback is a callback that is called when a message was received.
@@ -24,6 +28,36 @@ type MessageCallback func(*protocol.Message)
 // AddCallback adds a callback for received messages.
 func (n *Node) AddCallback(cb MessageCallback) {
 	n.cbs = append(n.cbs, cb)
+}
+
+// existsInCache checks if a given message exists in the cache.
+func (n *Node) existsInCache(msg *protocol.Message) bool {
+	for _, v := range n.Cache {
+		if (v.SeqCounter == msg.SeqCounter) && v.Source.Compare(&msg.Source) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// pushToCache pushes a message to cache if it does not exist in it
+func (n *Node) pushToCache(msg *protocol.Message) {
+	n.cacheLock.Lock()
+
+	if n.existsInCache(msg) {
+		logrus.Debug("Node: message already cached, ignoring")
+		n.cacheLock.Unlock()
+		return
+	}
+
+	// remove first cache entry, if cache is full
+	if uint(len(n.Cache)) == n.settings.LogicSettings.CacheSize && len(n.Cache) > 1 {
+		n.Cache = n.Cache[1:]
+	}
+
+	n.Cache = append(n.Cache, msg)
+	n.cacheLock.Unlock()
 }
 
 // handleCallbacks calls all registered callbacks that hook the received messages.
@@ -35,12 +69,14 @@ func (n *Node) handleCallbacks(msg *protocol.Message) {
 
 // SpreadMessage spreads a message by gossip.
 func (n *Node) SpreadMessage(msg *protocol.Message) error {
+	n.pushToCache(msg)
 	return n.logic.SpreadMessage(msg)
 }
 
 // handleMessage handles a message from a peer.
 func (n *Node) handleMessage(msg []byte) {
 	pmsg := protocol.ParseMessage(msg)
+	n.pushToCache(&pmsg)
 	go n.handleCallbacks(&pmsg)
 
 	n.logic.HandleMessage(msg)

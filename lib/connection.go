@@ -18,6 +18,7 @@ type Connection struct {
 	Received    chan []byte
 	Send        chan *Message
 	close       chan interface{}
+	Closed      bool
 }
 
 // Message is a message that is sent to the connection.
@@ -28,6 +29,7 @@ type Message struct {
 
 // Close the connection.
 func (c *Connection) Close() {
+	c.Closed = true
 	close(c.close)
 	c.Connection.Close()
 }

@@ -1,6 +1,12 @@
 package rest
 
-import "github.com/donothingloop/hamgo/protocol"
+import (
+	"encoding/json"
+	"net"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/donothingloop/hamgo/protocol"
+)
 
 // Contact for the rest api.
 type Contact struct {
@@ -14,6 +20,47 @@ type CQMessage struct {
 	Sequence uint16  `json:"sequence"`
 	Contact  Contact `json:"contact"`
 	Message  string  `json:"message"`
+}
+
+func messageToCQ(msg *protocol.Message) string {
+	var ips []string
+
+	for _, v := range msg.Source.IPs {
+		switch v.Type {
+		case protocol.ContactIPv4:
+			nip := net.IP(v.Data)
+			ips = append(ips, nip.String())
+
+			// TODO: IPv6
+		}
+	}
+
+	cm := CQMessage{
+		Sequence: msg.SeqCounter,
+		Message:  string(msg.Payload),
+		Contact: Contact{
+			Callsign: string(msg.Source.Callsign),
+			Type:     msg.Source.Type,
+			IPs:      ips,
+		},
+	}
+
+	dat, err := json.Marshal(cm)
+	if err != nil {
+		logrus.WithError(err).Warn("REST: failed to convert message to json")
+		return ""
+	}
+
+	return string(dat)
+}
+
+func messageToJSON(msg *protocol.Message) string {
+	switch msg.PayloadType {
+	case protocol.PayloadCQ:
+		return messageToCQ(msg)
+	}
+
+	return ""
 }
 
 /*

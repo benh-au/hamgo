@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net"
+	"strconv"
 
 	"github.com/donothingloop/hamgo/protocol"
 
@@ -62,7 +63,50 @@ func (h *Handler) cqmessage(c echo.Context) error {
 	return c.NoContent(200)
 }
 
+// cache returns the current cache
+func (h *Handler) cache(c echo.Context) error {
+	max := c.QueryParam("max")
+	maxI := -1
+
+	if max != "" {
+		mi, err := strconv.Atoi(max)
+		maxI = mi
+
+		if err != nil {
+			return err
+		}
+	}
+
+	response := "["
+	first := true
+	cnt := 0
+
+	for _, m := range h.node.Cache {
+		if first {
+			first = false
+		} else {
+			response += ", "
+		}
+
+		str := messageToJSON(m)
+		response += str
+
+		cnt++
+
+		// limit results if max is set
+		if cnt > maxI && maxI != -1 {
+			break
+		}
+	}
+
+	response += "]"
+
+	return c.String(200, response)
+}
+
 func (h *Handler) registerAPI(e *echo.Group) {
 	spread := e.Group("/spread")
 	spread.POST("/cq", h.cqmessage)
+
+	e.GET("/cache", h.cache)
 }

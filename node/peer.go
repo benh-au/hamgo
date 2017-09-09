@@ -176,6 +176,10 @@ func (p *Peer) reconnectWorker() {
 			return
 
 		case <-recon:
+			if p.connection != nil && p.connection.Closed {
+				p.connectionActive = false
+			}
+
 			if !p.connectionActive {
 				logrus.Debug("Peer: reconnect timer tick")
 				p.reconnect()
