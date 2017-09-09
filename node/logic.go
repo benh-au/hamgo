@@ -58,8 +58,12 @@ func (n *Logic) SpreadMessage(msg *protocol.Message) error {
 
 	logrus.Debug("Logic: spreading new message")
 
-	n.cacheMessage(msg)
-	n.spreadCachedMessage(msg)
+	if !n.isMessageCached(msg) {
+		n.cacheMessage(msg)
+		n.spreadCachedMessage(msg)
+	} else {
+		logrus.Info("Logic: message to be spread is already cached, ignoring")
+	}
 
 	return nil
 }
