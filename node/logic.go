@@ -114,7 +114,7 @@ func (n *Logic) HandleMessage(msg []byte) {
 	logrus.Debug("Logic: parsing incoming message")
 
 	// parse the incoming message
-	m := protocol.ParseMessage(msg)
+	m, _ := protocol.ParseMessage(msg)
 
 	logrus.Debug("Logic: handling incoming message")
 

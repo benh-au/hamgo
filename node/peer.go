@@ -18,6 +18,7 @@ type Peer struct {
 	checkMessages    chan interface{}
 	close            chan interface{}
 	connActiveClose  chan interface{}
+	reconnected      chan interface{}
 	writeLock        sync.Mutex
 	sendTries        uint
 	connectionActive bool
@@ -33,6 +34,7 @@ func NewPeer(host string, port uint, settings parameters.Settings) *Peer {
 		Settings:        settings,
 		checkMessages:   make(chan interface{}, 10),
 		connActiveClose: make(chan interface{}),
+		reconnected:     make(chan interface{}, 10),
 		sendTries:       0,
 		Received:        make(chan []byte),
 		close:           make(chan interface{}),
@@ -116,8 +118,8 @@ func (p *Peer) readWorker() {
 	}
 }
 
-// reconnect the connection.
-func (p *Peer) reconnect() {
+// Reconnect the connection.
+func (p *Peer) Reconnect() {
 	logrus.Info("Peer: reconnecting")
 
 	conn, err := p.client.Start()
@@ -132,6 +134,9 @@ func (p *Peer) reconnect() {
 	p.connectionActive = true
 
 	p.connActiveClose = make(chan interface{})
+
+	// call the reconnect handlers
+	p.reconnected <- nil
 
 	if !p.checkPending {
 		p.checkPending = true
@@ -182,7 +187,7 @@ func (p *Peer) reconnectWorker() {
 
 			if !p.connectionActive {
 				logrus.Debug("Peer: reconnect timer tick")
-				p.reconnect()
+				p.Reconnect()
 			}
 			break
 		}

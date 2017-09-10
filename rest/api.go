@@ -58,7 +58,7 @@ func (h *Handler) cqmessage(c echo.Context) error {
 		SeqCounter:    msg.Sequence,
 		Source:        ctg,
 		PayloadType:   protocol.PayloadCQ,
-		PayloadLenght: uint8(len(msg.Message)),
+		PayloadLenght: uint32(len(msg.Message)),
 		Payload:       []byte(msg.Message),
 	}
 
@@ -121,7 +121,7 @@ func (h *Handler) ws(c echo.Context) error {
 
 	closech := make(chan interface{})
 
-	cb := func(msg *protocol.Message) {
+	cb := func(msg *protocol.Message, src *node.Peer) {
 		logrus.Info("REST: sending message to websocket")
 
 		str := messageToJSON(msg)

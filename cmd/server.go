@@ -7,6 +7,7 @@ import (
 	"github.com/donothingloop/hamgo/parameters"
 	"github.com/donothingloop/hamgo/protocol"
 	"github.com/donothingloop/hamgo/rest"
+	"github.com/donothingloop/hamgo/updproto"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -43,6 +44,17 @@ func executeServer(cmd *cobra.Command, args []string) {
 	// create a new rest server
 	rs := rest.NewServer(config.REST)
 	go rs.Init(n)
+
+	// create an update protocol handler
+	updh := updproto.NewHandler(n)
+
+	n.AddCallback(&node.MessageCallback{
+		Cb: updh.UpdHandler,
+	})
+
+	n.AddPeerConnCallback(&node.PeerConnCallback{
+		PeerConnected: updh.PeerConnectedHandler,
+	})
 
 	if test {
 		logrus.Debug("Waiting for 5 seconds")

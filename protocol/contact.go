@@ -31,6 +31,15 @@ type ContactIP struct {
 	Data   []byte
 }
 
+// Contact represents a source in the gossip protocol.
+type Contact struct {
+	Type           ContactType
+	CallsignLength uint8
+	Callsign       []byte
+	NumberIPs      uint8
+	IPs            []ContactIP
+}
+
 // Bytes converts the ip address to bytes.
 func (c *ContactIP) Bytes() []byte {
 	buf := make([]byte, 2+len(c.Data))
@@ -69,15 +78,6 @@ func ParseContactIP(buf []byte) (ContactIP, int) {
 
 	ci.Data = dbuf
 	return ci, idx
-}
-
-// Contact represents a source in the gossip protocol.
-type Contact struct {
-	Type           ContactType
-	CallsignLength uint8
-	Callsign       []byte
-	NumberIPs      uint8
-	IPs            []ContactIP
 }
 
 func (c *Contact) equalIPs(other *Contact) bool {

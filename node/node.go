@@ -13,19 +13,27 @@ import (
 
 // Node is a node in the gossip protocol.
 type Node struct {
-	server    lib.TCPServer
-	settings  parameters.Settings
-	peers     []*Peer
-	logic     *Logic
-	close     chan interface{}
-	cbs       []*MessageCallback
-	Cache     []*protocol.Message
-	cacheLock sync.Mutex
+	server      lib.TCPServer
+	settings    parameters.Settings
+	station     parameters.Station
+	peers       []*Peer
+	logic       *Logic
+	close       chan interface{}
+	cbs         []*MessageCallback
+	cbsPeerConn []*PeerConnCallback
+	Cache       []*protocol.Message
+	cacheLock   sync.Mutex
+	Local       protocol.Contact
 }
 
 // MessageCallback is a callback that is called when a message was received.
 type MessageCallback struct {
-	Cb func(*protocol.Message)
+	Cb func(*protocol.Message, *Peer)
+}
+
+// PeerConnCallback is called when a peer reconnects.
+type PeerConnCallback struct {
+	PeerConnected func(*Peer)
 }
 
 // AddCallback adds a callback for received messages.
@@ -46,6 +54,31 @@ func (n *Node) RemoveCallback(cb *MessageCallback) {
 	n.cbs = cbs
 }
 
+// triggerPeerConnected is used to trigger all peer connected callbacks.
+func (n *Node) triggerPeerConnected(peer *Peer) {
+	for _, cb := range n.cbsPeerConn {
+		cb.PeerConnected(peer)
+	}
+}
+
+// AddPeerConnCallback adds a peer connected callback.
+func (n *Node) AddPeerConnCallback(cb *PeerConnCallback) {
+	n.cbsPeerConn = append(n.cbsPeerConn, cb)
+}
+
+// RemovePeerConnCallback removes a previously added peer connected callback.
+func (n *Node) RemovePeerConnCallback(cb *PeerConnCallback) {
+	var cbs []*PeerConnCallback
+
+	for _, v := range n.cbsPeerConn {
+		if v != cb {
+			cbs = append(cbs, v)
+		}
+	}
+
+	n.cbsPeerConn = cbs
+}
+
 // existsInCache checks if a given message exists in the cache.
 func (n *Node) existsInCache(msg *protocol.Message) bool {
 	for _, v := range n.Cache {
@@ -55,6 +88,20 @@ func (n *Node) existsInCache(msg *protocol.Message) bool {
 	}
 
 	return false
+}
+
+// AddToCache adds a remote message to the cache.
+func (n *Node) AddToCache(msg *protocol.Message) {
+	// append local node to path
+	msg.Path += ";" + n.station.Callsign
+	msg.PathLength = uint16(len(msg.Path))
+
+	// decrease TTL
+	if msg.TTL != 0 {
+		msg.TTL--
+	}
+
+	n.pushToCache(msg)
 }
 
 // pushToCache pushes a message to cache if it does not exist in it
@@ -82,11 +129,12 @@ func (n *Node) pushToCache(msg *protocol.Message) bool {
 }
 
 // handleCallbacks calls all registered callbacks that hook the received messages.
-func (n *Node) handleCallbacks(msg *protocol.Message) {
+func (n *Node) handleCallbacks(msg *protocol.Message, src *Peer) {
+	// call some fixed handlers
 	n.consoleHandler(msg)
 
 	for _, v := range n.cbs {
-		v.Cb(msg)
+		v.Cb(msg, src)
 	}
 }
 
@@ -102,21 +150,21 @@ func (n *Node) SpreadMessage(msg *protocol.Message) error {
 		return nil
 	}
 
-	go n.handleCallbacks(msg)
+	go n.handleCallbacks(msg, nil)
 
 	return n.logic.SpreadMessage(msg)
 }
 
 // handleMessage handles a message from a peer.
-func (n *Node) handleMessage(msg []byte) {
-	pmsg := protocol.ParseMessage(msg)
+func (n *Node) handleMessage(msg []byte, src *Peer) {
+	pmsg, _ := protocol.ParseMessage(msg)
 
 	// message already cached, ignoring
 	if !n.pushToCache(&pmsg) {
 		return
 	}
 
-	go n.handleCallbacks(&pmsg)
+	go n.handleCallbacks(&pmsg, src)
 
 	n.logic.HandleMessage(msg)
 }
@@ -146,9 +194,14 @@ func (n *Node) peerWorker(p *Peer) {
 			logrus.Debug("Node: peerWorker: closing peer")
 			return
 
+		case <-p.reconnected:
+			logrus.Debug("Node: peer connected")
+			n.triggerPeerConnected(p)
+			break
+
 		case msg := <-p.Received:
 			logrus.Debug("Node: message received")
-			n.handleMessage(msg)
+			n.handleMessage(msg, p)
 			break
 		}
 	}
@@ -164,11 +217,12 @@ func (n *Node) createPeers() {
 
 		logrus.Debug("Node: starting peer")
 
-		// start the peer
-		p.Start()
-
 		// start the peer worker
 		go n.peerWorker(p)
+
+		// start the peer
+		p.Start()
+		p.Reconnect()
 	}
 }
 
@@ -195,15 +249,16 @@ func (n *Node) handleConnection(conn *lib.Connection) {
 		logrus.Info("Node: creating new peer")
 		np := NewPeer(conn.Connection.RemoteAddr().String(), n.settings.Port, n.settings)
 		np.fromServer = true
+
+		// start the peer worker
+		go n.peerWorker(np)
+
 		np.Start()
 
 		// set the connection and start the read
 		np.SetConnection(conn)
 
 		n.logic.peers = append(n.logic.peers, np)
-
-		// start the peer worker
-		go n.peerWorker(np)
 	} else {
 		logrus.Debug("Node: setting connections")
 		p.SetConnection(conn)
@@ -233,12 +288,20 @@ func NewNode(settings parameters.Settings, station parameters.Station) (*Node, e
 
 	n := &Node{
 		settings: settings,
+		station:  station,
 		server: lib.TCPServer{
 			Port: settings.Port,
 		},
 		logic: &Logic{
 			settings:        settings.LogicSettings,
 			settingsStation: station,
+		},
+		Local: protocol.Contact{
+			Type:           protocol.ContactTypeFixed,
+			CallsignLength: uint8(len(station.Callsign)),
+			Callsign:       []byte(station.Callsign),
+			NumberIPs:      0,
+			IPs:            []protocol.ContactIP{},
 		},
 	}
 

@@ -13,12 +13,12 @@ type PayloadType uint16
 const (
 	PayloadCQ    = 0
 	PayloadDebug = 1
-	PayloadHamgo = 2
+	PayloadUpd   = 2
 )
 
 // Flags for the protcol.
 const (
-	FlagNoCache = (1 << 1)
+	FlagNoCache = (1 << 0)
 )
 
 // Message is a message in the transport.
@@ -31,7 +31,7 @@ type Message struct {
 	PathLength    uint16
 	Path          string
 	PayloadType   PayloadType
-	PayloadLenght uint8
+	PayloadLenght uint32
 	Payload       []byte
 }
 
@@ -59,14 +59,17 @@ func (m *Message) Bytes() []byte {
 	binary.LittleEndian.PutUint16(buf[idx:], m.PathLength)
 	idx += 2
 
-	copy(buf[idx:], []byte(m.Path))
-	idx += len(m.Path)
+	if m.PathLength != 0 {
+		pth := []byte(m.Path)
+		copy(buf[idx:], pth[0:int(m.PathLength)])
+		idx += len(m.Path)
+	}
 
 	buf[idx] = uint8(m.PayloadType)
 	idx++
 
-	buf[idx] = m.PayloadLenght
-	idx++
+	binary.LittleEndian.PutUint32(buf[idx:idx+4], m.PayloadLenght)
+	idx += 4
 
 	copy(buf[idx:], m.Payload)
 	idx += len(m.Payload)
@@ -75,7 +78,7 @@ func (m *Message) Bytes() []byte {
 }
 
 // ParseMessage parses a message from a buffer.
-func ParseMessage(buf []byte) Message {
+func ParseMessage(buf []byte) (Message, []byte) {
 	msg := Message{}
 	idx := 0
 
@@ -99,21 +102,23 @@ func ParseMessage(buf []byte) Message {
 	msg.PathLength = binary.LittleEndian.Uint16(buf[idx:])
 	idx += 2
 
-	msg.Path = string(buf[idx : idx+int(msg.PathLength)])
-	idx += int(msg.PathLength)
+	if msg.PathLength != 0 {
+		msg.Path = string(buf[idx : idx+int(msg.PathLength)])
+		idx += int(msg.PathLength)
+	}
 
 	msg.PayloadType = PayloadType(buf[idx])
 	idx++
 
-	msg.PayloadLenght = buf[idx]
-	idx++
+	msg.PayloadLenght = binary.LittleEndian.Uint32(buf[idx : idx+4])
+	idx += 4
 
 	pbuf := make([]byte, msg.PayloadLenght)
-	for i := uint8(0); i < msg.PayloadLenght; i++ {
+	for i := uint32(0); i < msg.PayloadLenght; i++ {
 		pbuf[i] = buf[idx]
 		idx++
 	}
 	msg.Payload = pbuf
 
-	return msg
+	return msg, buf[idx:]
 }
