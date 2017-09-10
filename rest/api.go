@@ -121,16 +121,21 @@ func (h *Handler) ws(c echo.Context) error {
 	}
 
 	defer ws.Close()
-
 	closech := make(chan interface{})
+	closed := false
 
 	cb := func(msg *protocol.Message, src *node.Peer) {
+		if closed {
+			return
+		}
+
 		logrus.Info("REST: sending message to websocket")
 
 		str := messageToJSON(msg)
 		err := ws.WriteMessage(websocket.TextMessage, []byte(str))
 
 		if err != nil {
+			closed = true
 			close(closech)
 		}
 	}
