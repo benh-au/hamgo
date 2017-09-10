@@ -62,6 +62,11 @@ func (n *Node) pushToCache(msg *protocol.Message) bool {
 	n.cacheLock.Lock()
 	defer n.cacheLock.Unlock()
 
+	if (msg.Flags & protocol.FlagNoCache) != 0 {
+		logrus.Debug("node: not caching message with no-cache flag")
+		return true
+	}
+
 	if n.existsInCache(msg) {
 		logrus.Debug("Node: message already cached, ignoring")
 		return false

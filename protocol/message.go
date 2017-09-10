@@ -13,12 +13,20 @@ type PayloadType uint16
 const (
 	PayloadCQ    = 0
 	PayloadDebug = 1
+	PayloadHamgo = 2
+)
+
+// Flags for the protcol.
+const (
+	FlagNoCache = (1 << 1)
 )
 
 // Message is a message in the transport.
 type Message struct {
 	Version       uint16
-	SeqCounter    uint16
+	SeqCounter    uint32
+	TTL           uint8
+	Flags         uint8
 	Source        Contact
 	PathLength    uint16
 	Path          string
@@ -35,8 +43,14 @@ func (m *Message) Bytes() []byte {
 	binary.LittleEndian.PutUint16(buf[idx:], m.Version)
 	idx += 2
 
-	binary.LittleEndian.PutUint16(buf[idx:], m.SeqCounter)
-	idx += 2
+	binary.LittleEndian.PutUint32(buf[idx:], m.SeqCounter)
+	idx += 4
+
+	buf[idx] = m.TTL
+	idx++
+
+	buf[idx] = m.Flags
+	idx++
 
 	cb := m.Source.Bytes()
 	copy(buf[idx:], cb)
@@ -68,8 +82,14 @@ func ParseMessage(buf []byte) Message {
 	msg.Version = binary.LittleEndian.Uint16(buf[idx : idx+2])
 	idx += 2
 
-	msg.SeqCounter = binary.LittleEndian.Uint16(buf[idx : idx+2])
-	idx += 2
+	msg.SeqCounter = binary.LittleEndian.Uint32(buf[idx : idx+4])
+	idx += 4
+
+	msg.TTL = buf[idx]
+	idx++
+
+	msg.Flags = buf[idx]
+	idx++
 
 	ct, rbuf := ParseContact(buf[idx:])
 	buf = rbuf

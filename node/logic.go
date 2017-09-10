@@ -11,7 +11,7 @@ import (
 )
 
 type cacheEntry struct {
-	SeqCounter uint16
+	SeqCounter uint32
 	Source     protocol.Contact
 }
 
@@ -38,6 +38,11 @@ func (n *Logic) isMessageCached(msg *protocol.Message) bool {
 }
 
 func (n *Logic) cacheMessage(msg *protocol.Message) {
+	if (msg.Flags & protocol.FlagNoCache) != 0 {
+		logrus.Debug("Logic: not caching message with no-cache flag")
+		return
+	}
+
 	if uint(len(n.cache)) >= n.settings.CacheSize {
 		n.cache = n.cache[1:]
 		logrus.Debug("Logic: cache clean")
@@ -73,9 +78,18 @@ func (n *Logic) SpreadMessage(msg *protocol.Message) error {
 	msg.Path += ";" + n.settingsStation.Callsign
 	msg.PathLength = uint16(len(msg.Path))
 
+	// decrease TTL
+	if msg.TTL != 0 {
+		msg.TTL--
+	}
+
 	if !n.isMessageCached(msg) {
 		n.cacheMessage(msg)
-		n.spreadCachedMessage(msg)
+
+		// spread message only if the TTL is above zero
+		if msg.TTL != 0 {
+			n.spreadCachedMessage(msg)
+		}
 	} else {
 		logrus.Info("Logic: message to be spread is already cached, ignoring")
 	}
@@ -111,11 +125,17 @@ func (n *Logic) HandleMessage(msg []byte) {
 		m.Path += ";" + n.settingsStation.Callsign
 		m.PathLength = uint16(len(m.Path))
 
+		if m.TTL != 0 {
+			m.TTL--
+		}
+
 		// cache message
 		n.cacheMessage(&m)
 
-		// spread the message to peers
-		n.spreadCachedMessage(&m)
+		if m.TTL != 0 {
+			// spread the message to peers
+			n.spreadCachedMessage(&m)
+		}
 	} else {
 		logrus.Debug("Logic: message already cached, ignoring")
 	}
