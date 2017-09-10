@@ -54,9 +54,12 @@ func (h *Handler) cqmessage(c echo.Context) error {
 
 	// build the network message
 	nmsg := protocol.Message{
-		Version:       protocolVersion,
-		SeqCounter:    msg.Sequence,
-		Source:        ctg,
+		Version:    protocolVersion,
+		SeqCounter: msg.Sequence,
+		Source:     ctg,
+		TTL:        255,
+		Flags:      0,
+
 		PayloadType:   protocol.PayloadCQ,
 		PayloadLenght: uint32(len(msg.Message)),
 		Payload:       []byte(msg.Message),

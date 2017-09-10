@@ -126,7 +126,10 @@ func (h *Handler) handleResponse(upd *protocol.UpdPayload, src *node.Peer) {
 
 	for _, e := range res.Entries {
 		logrus.WithField("entry", e).Debug("UpProto: received entry")
-		h.node.AddToCache(&e)
+		logrus.Debug("UpProto: caching message")
+
+		d := e
+		h.node.AddToCache(&d)
 	}
 }
 

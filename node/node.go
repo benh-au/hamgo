@@ -81,12 +81,16 @@ func (n *Node) RemovePeerConnCallback(cb *PeerConnCallback) {
 
 // existsInCache checks if a given message exists in the cache.
 func (n *Node) existsInCache(msg *protocol.Message) bool {
+	logrus.WithField("msg", msg).Debug("Node: check if message is in cache")
+
 	for _, v := range n.Cache {
 		if (v.SeqCounter == msg.SeqCounter) && v.Source.Compare(&msg.Source) {
+			logrus.WithField("msg", msg).Debug("Node: found message in cache")
 			return true
 		}
 	}
 
+	logrus.Debug("Node: did not find message in cache")
 	return false
 }
 
@@ -259,10 +263,13 @@ func (n *Node) handleConnection(conn *lib.Connection) {
 		np.SetConnection(conn)
 
 		n.logic.peers = append(n.logic.peers, np)
+		p = np
 	} else {
 		logrus.Debug("Node: setting connections")
 		p.SetConnection(conn)
 	}
+
+	n.triggerPeerConnected(p)
 }
 
 // connectionWorker waits for new connections and adds them as peers.

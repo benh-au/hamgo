@@ -243,7 +243,7 @@ func (p *Peer) QueueMessage(msg []byte) {
 
 	p.queue = append(p.queue, msg)
 
-	logrus.WithField("msg", msg).Debug("Peer: queueed peer message")
+	logrus.WithField("msg", msg).Debug("Peer: queued peer message")
 
 	if !p.checkPending {
 		p.checkPending = true
