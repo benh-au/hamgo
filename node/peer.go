@@ -36,7 +36,7 @@ func NewPeer(host string, port uint, settings parameters.Settings) *Peer {
 		connActiveClose: make(chan interface{}),
 		reconnected:     make(chan interface{}, 10),
 		sendTries:       0,
-		Received:        make(chan []byte),
+		Received:        make(chan []byte, 10),
 		close:           make(chan interface{}),
 		client: &lib.TCPClient{
 			Host: host,

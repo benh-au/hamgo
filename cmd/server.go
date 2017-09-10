@@ -38,13 +38,6 @@ func executeServer(cmd *cobra.Command, args []string) {
 		logrus.WithError(err).Warn("Failed to create node")
 	}
 
-	logrus.Info("Node started.")
-	defer n.Close()
-
-	// create a new rest server
-	rs := rest.NewServer(config.REST)
-	go rs.Init(n)
-
 	// create an update protocol handler
 	updh := updproto.NewHandler(n)
 
@@ -55,6 +48,18 @@ func executeServer(cmd *cobra.Command, args []string) {
 	n.AddPeerConnCallback(&node.PeerConnCallback{
 		PeerConnected: updh.PeerConnectedHandler,
 	})
+
+	err = n.Init()
+	if err != nil {
+		logrus.WithError(err).Warn("Failed to init node")
+	}
+
+	logrus.Info("Node started.")
+	defer n.Close()
+
+	// create a new rest server
+	rs := rest.NewServer(config.REST)
+	go rs.Init(n)
 
 	if test {
 		logrus.Debug("Waiting for 5 seconds")

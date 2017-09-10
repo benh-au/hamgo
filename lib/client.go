@@ -27,9 +27,9 @@ func (c *TCPClient) Start() (*Connection, error) {
 
 	co := Connection{
 		Connection: conn,
-		Send:       make(chan *Message),
+		Send:       make(chan *Message, 10),
 		close:      make(chan interface{}),
-		Received:   make(chan []byte),
+		Received:   make(chan []byte, 10),
 	}
 
 	// start a goroutine for the worker

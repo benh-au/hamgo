@@ -78,7 +78,7 @@ func (h *Handler) handleRequest(upd *protocol.UpdPayload, src *node.Peer) {
 	req := protocol.ParsePayloadCacheRequest(upd.Data)
 	res := protocol.UpdPayloadCacheResponse{}
 
-	logrus.WithField("payload", req).Debug("UpProto: received query")
+	logrus.WithField("payload", req).Info("UpProto: received query")
 
 	for _, c := range h.node.Cache {
 		if !h.msgInRequest(c, &req) {
@@ -122,10 +122,10 @@ func (h *Handler) handleRequest(upd *protocol.UpdPayload, src *node.Peer) {
 
 func (h *Handler) handleResponse(upd *protocol.UpdPayload, src *node.Peer) {
 	res := protocol.ParsePayloadCacheResponse(upd.Data)
-	logrus.WithField("payload", res).Debug("UpProto: received response")
+	logrus.WithField("payload", res).Info("UpProto: received response")
 
 	for _, e := range res.Entries {
-		logrus.WithField("entry", e).Debug("UpProto: received entry")
+		logrus.WithField("entry", e).Info("UpProto: received entry")
 		logrus.Debug("UpProto: caching message")
 
 		d := e

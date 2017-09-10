@@ -269,7 +269,7 @@ func (n *Node) handleConnection(conn *lib.Connection) {
 		p.SetConnection(conn)
 	}
 
-	n.triggerPeerConnected(p)
+	go n.triggerPeerConnected(p)
 }
 
 // connectionWorker waits for new connections and adds them as peers.
@@ -312,6 +312,11 @@ func NewNode(settings parameters.Settings, station parameters.Station) (*Node, e
 		},
 	}
 
+	return n, nil
+}
+
+// Init the node.
+func (n *Node) Init() error {
 	// create the peer instances
 	n.createPeers()
 
@@ -322,11 +327,11 @@ func NewNode(settings parameters.Settings, station parameters.Station) (*Node, e
 	err := n.server.Start()
 	if err != nil {
 		logrus.WithError(err).Warn("Node: failed to start TCP server")
-		return nil, err
+		return err
 	}
 
 	// start the connection worker for the server
 	go n.connectionWorker()
 
-	return n, nil
+	return nil
 }
