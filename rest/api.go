@@ -3,6 +3,7 @@ package rest
 import (
 	"net"
 	"strconv"
+	"sync"
 
 	"github.com/donothingloop/hamgo/node"
 
@@ -129,6 +130,7 @@ func (h *Handler) ws(c echo.Context) error {
 	defer ws.Close()
 	closech := make(chan interface{})
 	closed := false
+	lck := sync.Mutex{}
 
 	cb := func(msg *protocol.Message, src *node.Peer) {
 		if closed {
@@ -141,8 +143,10 @@ func (h *Handler) ws(c echo.Context) error {
 		err := ws.WriteMessage(websocket.TextMessage, []byte(str))
 
 		if err != nil {
+			lck.Lock()
 			closed = true
 			close(closech)
+			lck.Unlock()
 		}
 	}
 

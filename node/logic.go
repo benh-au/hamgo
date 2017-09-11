@@ -100,6 +100,11 @@ func (n *Logic) SpreadMessage(msg *protocol.Message) error {
 
 // spreadCachedMessage spreads a message using the gossip protocol.
 func (n *Logic) spreadCachedMessage(msg *protocol.Message) {
+	if strings.Contains(msg.Path, n.settingsStation.Callsign) {
+		logrus.Info("Logic: path already contains this station, ignoring pacakge")
+		return
+	}
+
 	buf := msg.Bytes()
 
 	logrus.WithField("msg", msg).Debug("Logic: spreading cached message")
@@ -118,10 +123,13 @@ func (n *Logic) sendACK(msg *protocol.Message) {
 	ackbuf := ack.Bytes()
 
 	pmsg := protocol.Message{
-		Version:       1,
-		SeqCounter:    0,
-		Flags:         protocol.FlagNoCache,
-		Source:        n.Local,
+		Version:    1,
+		SeqCounter: 0,
+		Flags:      protocol.FlagNoCache,
+		Source:     n.Local,
+
+		// maybe include a original TTL field in the protocol message
+		TTL:           255,
 		PathLength:    0,
 		Path:          "",
 		PayloadType:   protocol.PayloadAck,
