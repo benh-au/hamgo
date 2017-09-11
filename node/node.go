@@ -312,6 +312,8 @@ func NewNode(settings parameters.Settings, station parameters.Station) (*Node, e
 		},
 	}
 
+	n.logic.Local = n.Local
+
 	return n, nil
 }
 

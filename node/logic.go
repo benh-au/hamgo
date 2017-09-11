@@ -21,6 +21,7 @@ type Logic struct {
 	settingsStation parameters.Station
 	cache           []*cacheEntry
 	peers           []*Peer
+	Local           protocol.Contact
 }
 
 func (n *Logic) isMessageCached(msg *protocol.Message) bool {
@@ -109,6 +110,31 @@ func (n *Logic) spreadCachedMessage(msg *protocol.Message) {
 	}
 }
 
+func (n *Logic) sendACK(msg *protocol.Message) {
+	ack := protocol.ACKPayload{
+		SeqCounter: msg.SeqCounter,
+		Source:     msg.Source,
+	}
+	ackbuf := ack.Bytes()
+
+	pmsg := protocol.Message{
+		Version:       1,
+		SeqCounter:    0,
+		Flags:         protocol.FlagNoCache,
+		Source:        n.Local,
+		PathLength:    0,
+		Path:          "",
+		PayloadType:   protocol.PayloadAck,
+		PayloadLenght: uint32(len(ackbuf)),
+		Payload:       ackbuf,
+	}
+
+	logrus.Debug("Logic: sending ACK")
+
+	// send the ACK
+	n.SpreadMessage(&pmsg)
+}
+
 // HandleMessage handles an incoming message from a peer.
 func (n *Logic) HandleMessage(msg []byte) {
 	logrus.Debug("Logic: parsing incoming message")
@@ -136,6 +162,9 @@ func (n *Logic) HandleMessage(msg []byte) {
 			// spread the message to peers
 			n.spreadCachedMessage(&m)
 		}
+
+		// send ACK
+		n.sendACK(&m)
 	} else {
 		logrus.Debug("Logic: message already cached, ignoring")
 	}

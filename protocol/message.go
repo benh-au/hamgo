@@ -14,11 +14,13 @@ const (
 	PayloadCQ    = 0
 	PayloadDebug = 1
 	PayloadUpd   = 2
+	PayloadAck   = 3
 )
 
 // Flags for the protcol.
 const (
 	FlagNoCache = (1 << 0)
+	FlagACK     = (1 << 1)
 )
 
 // Message is a message in the transport.
