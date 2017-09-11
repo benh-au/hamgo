@@ -26,6 +26,16 @@
           <input type="text" name="message" class="form-control" [(ngModel)]="message">
         </div>
 
+        <div class="form-group">
+          <label for="sequence">Sequence</label>
+          <input type="number" name="sequence" class="form-control" [(ngModel)]="sequence">
+        </div>
+
+        <div class="form-group">
+          <label for="ack">ACK</label>
+          <input type="checkbox" name="ack" class="form-control" [(ngModel)]="ack">
+        </div>
+
         <button class="btn btn-success" (click)="send()">Send</button>
       </div>
     </div>

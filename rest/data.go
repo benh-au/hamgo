@@ -20,6 +20,7 @@ type CQMessage struct {
 	Sequence uint32  `json:"sequence"`
 	Contact  Contact `json:"contact"`
 	Message  string  `json:"message"`
+	ACK      bool    `json:"ack,omitempty"`
 }
 
 func messageToCQ(msg *protocol.Message) string {
@@ -43,6 +44,7 @@ func messageToCQ(msg *protocol.Message) string {
 			Type:     msg.Source.Type,
 			IPs:      ips,
 		},
+		ACK: ((msg.Flags & protocol.FlagACK) != 0),
 	}
 
 	dat, err := json.Marshal(cm)

@@ -52,13 +52,19 @@ func (h *Handler) cqmessage(c echo.Context) error {
 		IPs:            ips,
 	}
 
+	flags := uint8(0)
+
+	if msg.ACK {
+		flags |= protocol.FlagACK
+	}
+
 	// build the network message
 	nmsg := protocol.Message{
 		Version:    protocolVersion,
 		SeqCounter: msg.Sequence,
 		Source:     ctg,
 		TTL:        255,
-		Flags:      0,
+		Flags:      flags,
 
 		PayloadType:   protocol.PayloadCQ,
 		PayloadLenght: uint32(len(msg.Message)),
