@@ -17,8 +17,9 @@ export class HomeComponent implements OnInit {
 
   public callsign: string = "";
   public ip: string = "";
-  private message: string = "";
+  public message: string = "";
   public sequence: number = 0;
+  public ack: boolean = false;
 
   public showSend: boolean = false;
 
@@ -54,7 +55,8 @@ export class HomeComponent implements OnInit {
         type: 0,
         ips: [this.ip],
       },
-      message: this.message
+      message: this.message,
+      ack: this.ack
     };
 
     this.sequence++;

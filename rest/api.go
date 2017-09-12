@@ -144,8 +144,10 @@ func (h *Handler) ws(c echo.Context) error {
 
 		if err != nil {
 			lck.Lock()
-			closed = true
-			close(closech)
+			if !closed {
+				closed = true
+				close(closech)
+			}
 			lck.Unlock()
 		}
 	}

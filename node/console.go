@@ -13,6 +13,7 @@ func (n *Node) consoleHandler(msg *protocol.Message) {
 		"Version":         msg.Version,
 		"Source Callsign": string(msg.Source.Callsign),
 		"Source Type":     msg.Source.Type,
+		"Flags":           msg.Flags,
 		"Payload Lenght":  msg.PayloadLenght,
 		"Payload Type":    msg.PayloadType,
 		"Payload":         string(msg.Payload),

@@ -2,6 +2,7 @@ package node
 
 import (
 	"errors"
+	"strings"
 	"sync"
 
 	"github.com/donothingloop/hamgo/lib"
@@ -162,6 +163,11 @@ func (n *Node) SpreadMessage(msg *protocol.Message) error {
 // handleMessage handles a message from a peer.
 func (n *Node) handleMessage(msg []byte, src *Peer) {
 	pmsg, _ := protocol.ParseMessage(msg)
+
+	if strings.Contains(pmsg.Path, n.station.Callsign) {
+		logrus.Info("Node: path already contains this station, ignoring pacakge")
+		return
+	}
 
 	// message already cached, ignoring
 	if !n.pushToCache(&pmsg) {

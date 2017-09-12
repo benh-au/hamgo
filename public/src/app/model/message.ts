@@ -7,5 +7,6 @@ export interface Contact {
 export interface Message {
   sequence: number,
   contact: Contact,
-  message: string
+  message: string,
+  ack: boolean
 }
