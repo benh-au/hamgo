@@ -17,7 +17,7 @@ func (a *ACKPayload) Bytes() []byte {
 	copy(buf[idx:], ctbuf)
 	idx += len(ctbuf)
 
-	binary.LittleEndian.PutUint32(buf[idx:idx+4], a.SeqCounter)
+	binary.LittleEndian.PutUint64(buf[idx:idx+4], a.SeqCounter)
 	idx += 4
 
 	return buf
@@ -31,7 +31,7 @@ func ParseACKPayload(buf []byte) *ACKPayload {
 	idx := 0
 	ack.Source = ct
 
-	ack.SeqCounter = binary.LittleEndian.Uint32(rbuf[idx : idx+4])
+	ack.SeqCounter = binary.LittleEndian.Uint64(rbuf[idx : idx+4])
 	idx += 4
 
 	return ack

@@ -17,7 +17,7 @@ type Contact struct {
 
 // CQMessage indicates the users location.
 type CQMessage struct {
-	Sequence uint32  `json:"sequence"`
+	Sequence uint64  `json:"sequence"`
 	Contact  Contact `json:"contact"`
 	Message  string  `json:"message"`
 	ACK      bool    `json:"ack,omitempty"`
