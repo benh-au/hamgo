@@ -8,7 +8,7 @@ import (
 func TestMessage_Bytes(t *testing.T) {
 	type fields struct {
 		Version       uint16
-		SeqCounter    uint32
+		SeqCounter    uint64
 		TTL           uint8
 		Flags         uint8
 		Source        Contact

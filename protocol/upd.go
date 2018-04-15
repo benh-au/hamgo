@@ -22,7 +22,7 @@ type UpdPayload struct {
 // of the messages that are already in the cache of the node so that only new messages
 // have to be sent from the remote peer.
 type UpdRequestCacheEntry struct {
-	SeqCounter uint32
+	SeqCounter uint64
 	Source     Contact
 }
 
@@ -45,7 +45,7 @@ func (e *UpdRequestCacheEntry) Bytes() []byte {
 	buf := make([]byte, len(ct)+4)
 	idx := 0
 
-	binary.LittleEndian.PutUint32(buf[idx:idx+4], e.SeqCounter)
+	binary.LittleEndian.PutUint64(buf[idx:idx+4], e.SeqCounter)
 	idx += 4
 
 	copy(buf[idx:], ct)
@@ -57,7 +57,7 @@ func ParseCacheEntry(buf []byte) (UpdRequestCacheEntry, []byte) {
 	re := UpdRequestCacheEntry{}
 	idx := 0
 
-	re.SeqCounter = binary.LittleEndian.Uint32(buf[idx : idx+4])
+	re.SeqCounter = binary.LittleEndian.Uint64(buf[idx : idx+4])
 	idx += 4
 
 	ct, rbuf := ParseContact(buf[idx:])

@@ -43,7 +43,7 @@ func TestParseACKPayload(t *testing.T) {
 func TestACKPayload_Bytes(t *testing.T) {
 	type fields struct {
 		Source     Contact
-		SeqCounter uint32
+		SeqCounter uint64
 	}
 	tests := []struct {
 		name   string

@@ -11,7 +11,7 @@ import (
 )
 
 type cacheEntry struct {
-	SeqCounter uint32
+	SeqCounter uint64
 	Source     protocol.Contact
 }
 

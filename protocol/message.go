@@ -88,7 +88,7 @@ func ParseMessage(buf []byte) (Message, []byte) {
 	msg.Version = binary.LittleEndian.Uint16(buf[idx : idx+2])
 	idx += 2
 
-	msg.SeqCounter = binary.LittleEndian.Uint32(buf[idx : idx+4])
+	msg.SeqCounter = binary.LittleEndian.Uint64(buf[idx : idx+4])
 	idx += 4
 
 	msg.TTL = buf[idx]
@@ -113,7 +113,7 @@ func ParseMessage(buf []byte) (Message, []byte) {
 	msg.PayloadType = PayloadType(buf[idx])
 	idx++
 
-	msg.PayloadLenght = binary.LittleEndian.Uint64(buf[idx : idx+8])
+	msg.PayloadLenght = binary.LittleEndian.Uint32(buf[idx : idx+8])
 	idx += 8
 
 	pbuf := make([]byte, msg.PayloadLenght)

@@ -5,7 +5,7 @@ import "encoding/binary"
 // ACKPayload representa an ack message.
 type ACKPayload struct {
 	Source     Contact
-	SeqCounter uint32
+	SeqCounter uint64
 }
 
 // Bytes converts to payload to bytes.

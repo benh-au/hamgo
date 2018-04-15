@@ -204,7 +204,7 @@ func TestParsePayloadCacheRequest(t *testing.T) {
 
 func TestUpdRequestCacheEntry_Bytes(t *testing.T) {
 	type fields struct {
-		SeqCounter uint32
+		SeqCounter uint64
 		Source     Contact
 	}
 	tests := []struct {
