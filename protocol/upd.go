@@ -45,8 +45,8 @@ func (e *UpdRequestCacheEntry) Bytes() []byte {
 	buf := make([]byte, len(ct)+4)
 	idx := 0
 
-	binary.LittleEndian.PutUint64(buf[idx:idx+4], e.SeqCounter)
-	idx += 4
+	binary.LittleEndian.PutUint64(buf[idx:idx+8], e.SeqCounter)
+	idx += 8
 
 	copy(buf[idx:], ct)
 	return buf
@@ -57,8 +57,8 @@ func ParseCacheEntry(buf []byte) (UpdRequestCacheEntry, []byte) {
 	re := UpdRequestCacheEntry{}
 	idx := 0
 
-	re.SeqCounter = binary.LittleEndian.Uint64(buf[idx : idx+4])
-	idx += 4
+	re.SeqCounter = binary.LittleEndian.Uint64(buf[idx : idx+8])
+	idx += 8
 
 	ct, rbuf := ParseContact(buf[idx:])
 	re.Source = ct

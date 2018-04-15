@@ -275,7 +275,7 @@ func (n *Node) handleConnection(conn *lib.Connection) {
 		p.SetConnection(conn)
 	}
 
-	go n.triggerPeerConnected(p)
+	n.triggerPeerConnected(p)
 }
 
 // connectionWorker waits for new connections and adds them as peers.
