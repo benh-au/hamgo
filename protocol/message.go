@@ -113,8 +113,8 @@ func ParseMessage(buf []byte) (Message, []byte) {
 	msg.PayloadType = PayloadType(buf[idx])
 	idx++
 
-	msg.PayloadLenght = binary.LittleEndian.Uint32(buf[idx : idx+8])
-	idx += 8
+	msg.PayloadLenght = binary.LittleEndian.Uint32(buf[idx : idx+4])
+	idx += 4
 
 	pbuf := make([]byte, msg.PayloadLenght)
 	for i := uint32(0); i < msg.PayloadLenght; i++ {
