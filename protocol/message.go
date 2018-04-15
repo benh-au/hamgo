@@ -11,10 +11,11 @@ type PayloadType uint16
 
 // Payload types.
 const (
-	PayloadCQ    = 0
-	PayloadDebug = 1
-	PayloadUpd   = 2
-	PayloadAck   = 3
+	PayloadCQ           = 0
+	PayloadDebug        = 1
+	PayloadUpd          = 2
+	PayloadAck          = 3
+	PayloadGroupMessage = 4
 )
 
 // Flags for the protcol.
@@ -26,7 +27,7 @@ const (
 // Message is a message in the transport.
 type Message struct {
 	Version       uint16
-	SeqCounter    uint32
+	SeqCounter    uint64
 	TTL           uint8
 	Flags         uint8
 	Source        Contact
@@ -45,8 +46,8 @@ func (m *Message) Bytes() []byte {
 	binary.LittleEndian.PutUint16(buf[idx:], m.Version)
 	idx += 2
 
-	binary.LittleEndian.PutUint32(buf[idx:], m.SeqCounter)
-	idx += 4
+	binary.LittleEndian.PutUint64(buf[idx:], m.SeqCounter)
+	idx += 8
 
 	buf[idx] = m.TTL
 	idx++
@@ -112,8 +113,8 @@ func ParseMessage(buf []byte) (Message, []byte) {
 	msg.PayloadType = PayloadType(buf[idx])
 	idx++
 
-	msg.PayloadLenght = binary.LittleEndian.Uint32(buf[idx : idx+4])
-	idx += 4
+	msg.PayloadLenght = binary.LittleEndian.Uint64(buf[idx : idx+8])
+	idx += 8
 
 	pbuf := make([]byte, msg.PayloadLenght)
 	for i := uint32(0); i < msg.PayloadLenght; i++ {
