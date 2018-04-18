@@ -59,6 +59,11 @@ func ParseCacheEntry(buf []byte) (*UpdRequestCacheEntry, []byte) {
 	re := UpdRequestCacheEntry{}
 	idx := 0
 
+	if len(buf) < 9 {
+		logrus.Warn("Upd: Failed to parse cache entry")
+		return nil, nil
+	}
+
 	re.SeqCounter = binary.LittleEndian.Uint64(buf[idx : idx+8])
 	idx += 8
 

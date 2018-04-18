@@ -99,13 +99,17 @@ func (h *Handler) cache(c echo.Context) error {
 	cnt := 0
 
 	for _, m := range h.node.Cache {
+		str := messageToJSON(m)
+		if str == "" {
+			continue
+		}
+
 		if first {
 			first = false
 		} else {
 			response += ", "
 		}
 
-		str := messageToJSON(m)
 		response += str
 
 		cnt++

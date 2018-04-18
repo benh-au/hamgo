@@ -1,6 +1,6 @@
 .PHONY: release all
 
-all: release
+all: clean release
 
 release:
 	mkdir dist
