@@ -13,14 +13,17 @@ type PayloadType uint16
 
 // Payload types.
 const (
-	PayloadCQ           = 0
-	PayloadDebug        = 1
-	PayloadUpd          = 2
-	PayloadAck          = 3
-	PayloadGroupMessage = 4
+	PayloadCQ                 = 0
+	PayloadDebug              = 1
+	PayloadUpd                = 2
+	PayloadAck                = 3
+	PayloadMessengerCQ        = 4
+	PayloadMessengerGroup     = 5
+	PayloadMessengerBroadcast = 6
+	PayloadMessengerEmergency = 7
 )
 
-// Flags for the protcol.
+// Flags for the protocol.
 const (
 	FlagNoCache = (1 << 0)
 	FlagACK     = (1 << 1)

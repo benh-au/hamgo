@@ -10,6 +10,7 @@ const (
 	SeverityWarn      = 2
 	SeverityCritical  = 3
 	SeverityEmergency = 4
+	SeverityNormal    = 5
 )
 
 // Group operations.
