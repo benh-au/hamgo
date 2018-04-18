@@ -1,6 +1,10 @@
 package protocol
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+
+	"github.com/Sirupsen/logrus"
+)
 
 // ACKPayload representa an ack message.
 type ACKPayload struct {
@@ -28,8 +32,18 @@ func ParseACKPayload(buf []byte) *ACKPayload {
 	ack := &ACKPayload{}
 
 	ct, rbuf := ParseContact(buf)
+	if ct == nil {
+		logrus.Warn("ACK: failed to parse corrupt contact, skipping")
+		return nil
+	}
+
+	if len(rbuf) < 4 {
+		logrus.Warn("ACK: failed to parse, skipping msg")
+		return nil
+	}
+
 	idx := 0
-	ack.Source = ct
+	ack.Source = *ct
 
 	ack.SeqCounter = binary.LittleEndian.Uint64(rbuf[idx : idx+8])
 	idx += 4

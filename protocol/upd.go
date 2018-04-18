@@ -3,6 +3,8 @@ package protocol
 import (
 	"encoding/binary"
 	"errors"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // Operations for hamgo protocol messages.
@@ -53,7 +55,7 @@ func (e *UpdRequestCacheEntry) Bytes() []byte {
 }
 
 // ParseCacheEntry parses a cache entry and returns the remaining buffer.
-func ParseCacheEntry(buf []byte) (UpdRequestCacheEntry, []byte) {
+func ParseCacheEntry(buf []byte) (*UpdRequestCacheEntry, []byte) {
 	re := UpdRequestCacheEntry{}
 	idx := 0
 
@@ -61,9 +63,14 @@ func ParseCacheEntry(buf []byte) (UpdRequestCacheEntry, []byte) {
 	idx += 8
 
 	ct, rbuf := ParseContact(buf[idx:])
-	re.Source = ct
+	if ct == nil {
+		logrus.Warn("Upd: failed to parse contact")
+		return nil, nil
+	}
 
-	return re, rbuf
+	re.Source = *ct
+
+	return &re, rbuf
 }
 
 // Bytes converts an update protocol request to a byte buffer.
@@ -119,7 +126,7 @@ func (r *UpdPayloadCacheResponse) Bytes() []byte {
 }
 
 // ParsePayloadCacheResponse parses a cache response.
-func ParsePayloadCacheResponse(buf []byte) UpdPayloadCacheResponse {
+func ParsePayloadCacheResponse(buf []byte) *UpdPayloadCacheResponse {
 	idx := 0
 	pcr := UpdPayloadCacheResponse{}
 
@@ -128,16 +135,21 @@ func ParsePayloadCacheResponse(buf []byte) UpdPayloadCacheResponse {
 
 	for i := 0; i < int(pcr.NumEntries); i++ {
 		m, rbuf := ParseMessage(buf[idx:])
-		pcr.Entries = append(pcr.Entries, m)
+		if m == nil {
+			logrus.Warn("Upd: failed to parse cache response")
+			return nil
+		}
+
+		pcr.Entries = append(pcr.Entries, *m)
 		idx = 0
 		buf = rbuf
 	}
 
-	return pcr
+	return &pcr
 }
 
 // ParsePayloadCacheRequest parses a cache request.
-func ParsePayloadCacheRequest(buf []byte) UpdPayloadCacheRequest {
+func ParsePayloadCacheRequest(buf []byte) *UpdPayloadCacheRequest {
 	cr := UpdPayloadCacheRequest{}
 	idx := 0
 
@@ -147,7 +159,11 @@ func ParsePayloadCacheRequest(buf []byte) UpdPayloadCacheRequest {
 	buf = buf[idx:]
 	for i := 0; i < int(cr.NumEntries); i++ {
 		e, rbuf := ParseCacheEntry(buf)
-		cr.Entries = append(cr.Entries, e)
+		if e == nil {
+			logrus.Warn("Upd: failed to parse cache request")
+			return nil
+		}
+		cr.Entries = append(cr.Entries, *e)
 
 		buf = rbuf
 
@@ -156,7 +172,7 @@ func ParsePayloadCacheRequest(buf []byte) UpdPayloadCacheRequest {
 		}
 	}
 
-	return cr
+	return &cr
 }
 
 // Bytes converts a update protocol payload to a byte buffer.
@@ -179,6 +195,11 @@ func ParseUpdPayload(buf []byte) (*UpdPayload, error) {
 	upd := UpdPayload{}
 	idx := 0
 
+	if len(buf) < 3 {
+		logrus.Warn("Upd: failed to parse payload")
+		return nil, errors.New("payload invalid")
+	}
+
 	upd.Operation = buf[idx]
 	idx++
 
@@ -186,6 +207,11 @@ func ParseUpdPayload(buf []byte) (*UpdPayload, error) {
 	idx += 2
 
 	if (len(buf) - int(idx)) < int(upd.DataLength) {
+		return nil, errors.New("payload invalid")
+	}
+
+	if len(buf) < idx+int(upd.DataLength) {
+		logrus.Warn("Upd: failed to parse payload, data length exceeds buffer bounds")
 		return nil, errors.New("payload invalid")
 	}
 

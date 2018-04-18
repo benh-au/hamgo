@@ -3,6 +3,8 @@ package protocol
 import (
 	"encoding/binary"
 
+	"github.com/Sirupsen/logrus"
+
 	"github.com/donothingloop/hamgo/parameters"
 )
 
@@ -81,9 +83,14 @@ func (m *Message) Bytes() []byte {
 }
 
 // ParseMessage parses a message from a buffer.
-func ParseMessage(buf []byte) (Message, []byte) {
+func ParseMessage(buf []byte) (*Message, []byte) {
 	msg := Message{}
 	idx := 0
+
+	if len(buf) < 2+8+1+1 {
+		logrus.Warn("Message: failed to parse message")
+		return nil, nil
+	}
 
 	msg.Version = binary.LittleEndian.Uint16(buf[idx : idx+2])
 	idx += 2
@@ -98,16 +105,37 @@ func ParseMessage(buf []byte) (Message, []byte) {
 	idx++
 
 	ct, rbuf := ParseContact(buf[idx:])
+	if ct == nil {
+		logrus.Warn("Message: failed to parse contact")
+		return nil, nil
+	}
+
 	buf = rbuf
 	idx = 0
-	msg.Source = ct
+	msg.Source = *ct
+
+	if len(buf) < 2 {
+		logrus.Warn("Message: failed to parse message")
+		return nil, nil
+	}
 
 	msg.PathLength = binary.LittleEndian.Uint16(buf[idx:])
 	idx += 2
 
 	if msg.PathLength != 0 {
+
+		if len(buf) < 2+int(msg.PathLength) {
+			logrus.Warn("Message: failed to parse path")
+			return nil, nil
+		}
+
 		msg.Path = string(buf[idx : idx+int(msg.PathLength)])
 		idx += int(msg.PathLength)
+	}
+
+	if len(buf) < idx+1+4 {
+		logrus.Warn("Message: failed to parse path length")
+		return nil, nil
 	}
 
 	msg.PayloadType = PayloadType(buf[idx])
@@ -116,6 +144,11 @@ func ParseMessage(buf []byte) (Message, []byte) {
 	msg.PayloadLenght = binary.LittleEndian.Uint32(buf[idx : idx+4])
 	idx += 4
 
+	if len(buf) < idx+int(msg.PayloadLenght) {
+		logrus.Warn("Message: failed to parse payload")
+		return nil, nil
+	}
+
 	pbuf := make([]byte, msg.PayloadLenght)
 	for i := uint32(0); i < msg.PayloadLenght; i++ {
 		pbuf[i] = buf[idx]
@@ -123,5 +156,5 @@ func ParseMessage(buf []byte) (Message, []byte) {
 	}
 	msg.Payload = pbuf
 
-	return msg, buf[idx:]
+	return &msg, buf[idx:]
 }

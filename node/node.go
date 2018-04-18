@@ -170,11 +170,11 @@ func (n *Node) handleMessage(msg []byte, src *Peer) {
 	}
 
 	// message already cached, ignoring
-	if !n.pushToCache(&pmsg) {
+	if !n.pushToCache(pmsg) {
 		return
 	}
 
-	go n.handleCallbacks(&pmsg, src)
+	go n.handleCallbacks(pmsg, src)
 
 	n.logic.HandleMessage(msg)
 }

@@ -3,6 +3,8 @@ package protocol
 import (
 	"bytes"
 
+	"github.com/Sirupsen/logrus"
+
 	"github.com/donothingloop/hamgo/parameters"
 )
 
@@ -60,15 +62,23 @@ func (c *ContactIP) Bytes() []byte {
 }
 
 // ParseContactIP parses a contact ip and returns the read length.
-func ParseContactIP(buf []byte) (ContactIP, int) {
+func ParseContactIP(buf []byte) (*ContactIP, int) {
 	idx := 0
 	ci := ContactIP{}
+
+	if len(buf) < 2 {
+		return nil, 0
+	}
 
 	ci.Type = ContactIPType(buf[idx])
 	idx++
 
 	ci.Length = buf[idx]
 	idx++
+
+	if len(buf) < 2+int(ci.Length) {
+		return nil, 0
+	}
 
 	dbuf := make([]byte, ci.Length)
 	for i := uint8(0); i < ci.Length; i++ {
@@ -77,7 +87,7 @@ func ParseContactIP(buf []byte) (ContactIP, int) {
 	}
 
 	ci.Data = dbuf
-	return ci, idx
+	return &ci, idx
 }
 
 func (c *Contact) equalIPs(other *Contact) bool {
@@ -135,15 +145,23 @@ func (c *Contact) Bytes() []byte {
 }
 
 // ParseContact parses a contact from a buffer and returns the remainder.
-func ParseContact(msg []byte) (Contact, []byte) {
+func ParseContact(msg []byte) (*Contact, []byte) {
 	idx := 0
 	c := Contact{}
+
+	if len(msg) < 2 {
+		return nil, nil
+	}
 
 	c.Type = ContactType(msg[idx])
 	idx++
 
 	c.CallsignLength = msg[idx]
 	idx++
+
+	if len(msg) < 3+int(c.CallsignLength) {
+		return nil, nil
+	}
 
 	// copy the callsign
 	for i := uint8(0); i < c.CallsignLength; i++ {
@@ -157,10 +175,15 @@ func ParseContact(msg []byte) (Contact, []byte) {
 	// parse the ip addresses
 	for i := uint8(0); i < c.NumberIPs; i++ {
 		ibuf, n := ParseContactIP(msg[idx:])
+		if ibuf == nil {
+			logrus.Warn("Contact: skipping broken IP")
+			continue
+		}
+
 		idx += n
 
-		c.IPs = append(c.IPs, ibuf)
+		c.IPs = append(c.IPs, *ibuf)
 	}
 
-	return c, msg[idx:]
+	return &c, msg[idx:]
 }

@@ -153,7 +153,7 @@ func (n *Logic) HandleMessage(msg []byte) {
 	}
 
 	// check if the message is not cached and relay it, otherwise ignore it
-	if !n.isMessageCached(&m) {
+	if !n.isMessageCached(m) {
 
 		// append local node to path
 		m.Path += ";" + n.settingsStation.Callsign
@@ -164,16 +164,16 @@ func (n *Logic) HandleMessage(msg []byte) {
 		}
 
 		// cache message
-		n.cacheMessage(&m)
+		n.cacheMessage(m)
 
 		if m.TTL != 0 {
 			// spread the message to peers
-			n.spreadCachedMessage(&m)
+			n.spreadCachedMessage(m)
 		}
 
 		if (m.Flags & protocol.FlagACK) != 0 {
 			// send ACK
-			n.sendACK(&m)
+			n.sendACK(m)
 		}
 	} else {
 		logrus.Debug("Logic: message already cached, ignoring")

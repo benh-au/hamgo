@@ -81,7 +81,7 @@ func (h *Handler) handleRequest(upd *protocol.UpdPayload, src *node.Peer) {
 	logrus.WithField("payload", req).Info("UpProto: received query")
 
 	for _, c := range h.node.Cache {
-		if !h.msgInRequest(c, &req) {
+		if !h.msgInRequest(c, req) {
 			res.Entries = append(res.Entries, *c)
 		}
 	}
