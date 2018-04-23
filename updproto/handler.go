@@ -140,6 +140,11 @@ func (h *Handler) UpdHandler(msg *protocol.Message, src *node.Peer) {
 		return
 	}
 
+	// catch empty messages
+	if src == nil || msg == nil {
+		return
+	}
+
 	logrus.Debug("UpProto: received message")
 
 	upd, err := protocol.ParseUpdPayload(msg.Payload)
