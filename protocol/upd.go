@@ -135,6 +135,10 @@ func ParsePayloadCacheResponse(buf []byte) *UpdPayloadCacheResponse {
 	idx := 0
 	pcr := UpdPayloadCacheResponse{}
 
+	if len(buf) < 4 {
+		return nil
+	}
+
 	pcr.NumEntries = binary.LittleEndian.Uint32(buf[idx : idx+4])
 	idx += 4
 
@@ -158,6 +162,10 @@ func ParsePayloadCacheRequest(buf []byte) *UpdPayloadCacheRequest {
 	cr := UpdPayloadCacheRequest{}
 	idx := 0
 
+	if len(buf) < 4 {
+		return nil
+	}
+
 	cr.NumEntries = binary.LittleEndian.Uint32(buf[idx : idx+4])
 	idx += 4
 
@@ -168,6 +176,7 @@ func ParsePayloadCacheRequest(buf []byte) *UpdPayloadCacheRequest {
 			logrus.Warn("Upd: failed to parse cache request")
 			return nil
 		}
+
 		cr.Entries = append(cr.Entries, *e)
 
 		buf = rbuf

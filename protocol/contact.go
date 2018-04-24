@@ -76,7 +76,7 @@ func ParseContactIP(buf []byte) (*ContactIP, int) {
 	ci.Length = buf[idx]
 	idx++
 
-	if len(buf) < 2+int(ci.Length) {
+	if len(buf) < idx+int(ci.Length) {
 		return nil, 0
 	}
 
@@ -159,7 +159,7 @@ func ParseContact(msg []byte) (*Contact, []byte) {
 	c.CallsignLength = msg[idx]
 	idx++
 
-	if len(msg) < 3+int(c.CallsignLength) {
+	if len(msg) < idx+int(c.CallsignLength) {
 		return nil, nil
 	}
 
@@ -167,6 +167,10 @@ func ParseContact(msg []byte) (*Contact, []byte) {
 	for i := uint8(0); i < c.CallsignLength; i++ {
 		c.Callsign = append(c.Callsign, msg[idx])
 		idx++
+	}
+
+	if len(msg) < idx+1 {
+		return nil, nil
 	}
 
 	c.NumberIPs = msg[idx]

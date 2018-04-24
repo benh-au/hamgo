@@ -76,6 +76,10 @@ func (h *Handler) msgInRequest(msg *protocol.Message, req *protocol.UpdPayloadCa
 // handleRequest handles a request for the update protocol.
 func (h *Handler) handleRequest(upd *protocol.UpdPayload, src *node.Peer) {
 	req := protocol.ParsePayloadCacheRequest(upd.Data)
+	if req == nil {
+		return
+	}
+
 	res := protocol.UpdPayloadCacheResponse{}
 
 	logrus.WithField("payload", req).Info("UpProto: received query")
@@ -122,6 +126,10 @@ func (h *Handler) handleRequest(upd *protocol.UpdPayload, src *node.Peer) {
 
 func (h *Handler) handleResponse(upd *protocol.UpdPayload, src *node.Peer) {
 	res := protocol.ParsePayloadCacheResponse(upd.Data)
+	if res == nil {
+		return
+	}
+
 	logrus.WithField("payload", res).Info("UpProto: received response")
 
 	for _, e := range res.Entries {
