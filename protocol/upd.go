@@ -145,8 +145,8 @@ func ParsePayloadCacheResponse(buf []byte) *UpdPayloadCacheResponse {
 	for i := 0; i < int(pcr.NumEntries); i++ {
 		m, rbuf := ParseMessage(buf[idx:])
 		if m == nil {
-			logrus.Warn("Upd: failed to parse cache response")
-			return nil
+			logrus.Warn("Upd: failed to parse cache response, skipping message")
+			continue
 		}
 
 		pcr.Entries = append(pcr.Entries, *m)
@@ -173,8 +173,8 @@ func ParsePayloadCacheRequest(buf []byte) *UpdPayloadCacheRequest {
 	for i := 0; i < int(cr.NumEntries); i++ {
 		e, rbuf := ParseCacheEntry(buf)
 		if e == nil {
-			logrus.Warn("Upd: failed to parse cache request")
-			return nil
+			logrus.Warn("Upd: failed to parse cache request, skipping entry")
+			continue
 		}
 
 		cr.Entries = append(cr.Entries, *e)
