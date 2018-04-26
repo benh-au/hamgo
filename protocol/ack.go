@@ -6,7 +6,7 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-// ACKPayload representa an ack message.
+// ACKPayload represents an ack message.
 type ACKPayload struct {
 	Source     Contact
 	SeqCounter uint64
@@ -15,7 +15,7 @@ type ACKPayload struct {
 // Bytes converts to payload to bytes.
 func (a *ACKPayload) Bytes() []byte {
 	ctbuf := a.Source.Bytes()
-	buf := make([]byte, len(ctbuf)+4)
+	buf := make([]byte, len(ctbuf)+8)
 	idx := 0
 
 	copy(buf[idx:], ctbuf)
@@ -37,7 +37,7 @@ func ParseACKPayload(buf []byte) *ACKPayload {
 		return nil
 	}
 
-	if len(rbuf) < 4 {
+	if len(rbuf) < 8 {
 		logrus.Warn("ACK: failed to parse, skipping msg")
 		return nil
 	}
@@ -46,7 +46,7 @@ func ParseACKPayload(buf []byte) *ACKPayload {
 	ack.Source = *ct
 
 	ack.SeqCounter = binary.LittleEndian.Uint64(rbuf[idx : idx+8])
-	idx += 4
+	idx += 8
 
 	return ack
 }

@@ -3,6 +3,8 @@ package cmd
 import (
 	"time"
 
+	"github.com/donothingloop/hamgo/ackproto"
+
 	"github.com/donothingloop/hamgo/node"
 	"github.com/donothingloop/hamgo/parameters"
 	"github.com/donothingloop/hamgo/protocol"
@@ -40,9 +42,13 @@ func executeServer(cmd *cobra.Command, args []string) {
 
 	// create an update protocol handler
 	updh := updproto.NewHandler(n)
+	ackh := ackproto.NewHandler(n)
 
 	n.AddCallback(&node.MessageCallback{
 		Cb: updh.UpdHandler,
+	})
+	n.AddCallback(&node.MessageCallback{
+		Cb: ackh.ACKHandler,
 	})
 
 	n.AddPeerConnCallback(&node.PeerConnCallback{

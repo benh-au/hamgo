@@ -113,7 +113,7 @@ func ParseCacheEntry(buf []byte) (*UpdRequestCacheEntry, []byte) {
 	idx := 0
 
 	if len(buf) < 9 {
-		logrus.Warn("Upd: Failed to parse cache entry")
+		logrus.Warn("Upd: Failed to parse cache entry, %d < %d", len(buf), 9)
 		return nil, nil
 	}
 
@@ -253,7 +253,7 @@ func (u *UpdPayload) Bytes() []byte {
 	binary.LittleEndian.PutUint16(buf[idx:idx+2], u.DataLength)
 	idx += 2
 
-	copy(buf[idx:], u.Data)
+	copy(buf[idx:], u.Data[:u.DataLength])
 	return buf
 }
 
@@ -274,6 +274,7 @@ func ParseUpdPayload(buf []byte) (*UpdPayload, error) {
 	idx += 2
 
 	if (len(buf) - int(idx)) < int(upd.DataLength) {
+		logrus.Warn("Upd: payload invalid, too small")
 		return nil, errors.New("payload invalid")
 	}
 
