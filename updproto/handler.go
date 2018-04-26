@@ -86,7 +86,10 @@ func (h *Handler) handleRequest(upd *protocol.UpdPayload, src *node.Peer) {
 
 	for _, c := range h.node.Cache {
 		if !h.msgInRequest(c, req) {
-			res.Entries = append(res.Entries, *c)
+			res.Entries = append(res.Entries, protocol.UpdPayloadEntry{
+				Message: *c,
+				Length:  0,
+			})
 		}
 	}
 
@@ -137,7 +140,7 @@ func (h *Handler) handleResponse(upd *protocol.UpdPayload, src *node.Peer) {
 		logrus.Debug("UpProto: caching message")
 
 		d := e
-		h.node.AddToCache(&d)
+		h.node.AddToCache(&d.Message)
 	}
 }
 
