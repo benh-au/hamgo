@@ -167,7 +167,7 @@ func (h *Handler) ws(c echo.Context) error {
 			err := ws.ReadJSON(msg)
 			if err != nil {
 				logrus.WithError(err).Warn("REST: failed to read incoming message")
-				continue
+				return
 			}
 
 			err = h.node.SpreadMessage(msg)
