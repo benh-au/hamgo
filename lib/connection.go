@@ -195,6 +195,7 @@ func (c *Connection) connectionWorker() {
 			idx = 0
 
 			c.FrameActive = false
+			continue
 		}
 
 		logrus.Debug("Connection: data byte")

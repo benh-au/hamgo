@@ -148,7 +148,7 @@ func ParseMessage(buf []byte) (*Message, []byte) {
 	idx += 4
 
 	if len(buf) < idx+int(msg.PayloadLenght) {
-		logrus.Warn("Message: failed to parse payload")
+		logrus.Warnf("Message: failed to parse payload, buffer smaller than payload length: %d < %d", len(buf), idx+int(msg.PayloadLenght))
 		return nil, nil
 	}
 

@@ -34,11 +34,64 @@ type UpdPayloadCacheRequest struct {
 	Entries    []UpdRequestCacheEntry
 }
 
+// UpdPayloadEntry contains a message for the reply message.
+// This is needed as messages may corrupt and therefore the length
+// may not match and a single corrupted message would otherwise
+// corrupt the whole reply.
+type UpdPayloadEntry struct {
+	Length  uint32
+	Message Message
+}
+
 // UpdPayloadCacheResponse is sent as an answer to a cache query in order to update the
 // querying nodes cache.
 type UpdPayloadCacheResponse struct {
 	NumEntries uint32
-	Entries    []Message
+	Entries    []UpdPayloadEntry
+}
+
+// Bytes converts an entry to bytes.
+func (e *UpdPayloadEntry) Bytes() []byte {
+	msb := e.Message.Bytes()
+	lm := len(msb)
+
+	buf := make([]byte, 4+lm)
+	idx := 0
+
+	binary.LittleEndian.PutUint32(buf[idx:], uint32(lm))
+	idx += 4
+
+	copy(buf[idx:], msb)
+	return buf
+}
+
+// ParsePayloadEntry parses an entry and tries to fail gracefully if the
+// message is corrupted.
+func ParsePayloadEntry(buf []byte) (*UpdPayloadEntry, []byte) {
+	re := UpdPayloadEntry{}
+	idx := 0
+
+	if len(buf) < 4 {
+		logrus.Warn("Upd: Failed to parse payload entry")
+		return nil, nil
+	}
+
+	re.Length = binary.LittleEndian.Uint32(buf[idx : idx+4])
+	idx += 4
+
+	if len(buf) < idx+int(re.Length) {
+		logrus.Warn("Upd: Failed to parse payload entry, msg length > buf len")
+		return nil, nil
+	}
+
+	msg, _ := ParseMessage(buf[idx:])
+	if msg == nil {
+		logrus.Warn("Upd: failed to parse message, ignoring and continuing")
+		return nil, buf[idx+int(re.Length):]
+	}
+
+	re.Message = *msg
+	return &re, buf[idx+int(re.Length):]
 }
 
 // Bytes converts a cache entry to bytes.
@@ -60,7 +113,7 @@ func ParseCacheEntry(buf []byte) (*UpdRequestCacheEntry, []byte) {
 	idx := 0
 
 	if len(buf) < 9 {
-		logrus.Warn("Upd: Failed to parse cache entry")
+		logrus.Warn("Upd: Failed to parse cache entry, %d < %d", len(buf), 9)
 		return nil, nil
 	}
 
@@ -143,7 +196,7 @@ func ParsePayloadCacheResponse(buf []byte) *UpdPayloadCacheResponse {
 	idx += 4
 
 	for i := 0; i < int(pcr.NumEntries); i++ {
-		m, rbuf := ParseMessage(buf[idx:])
+		m, rbuf := ParsePayloadEntry(buf[idx:])
 		if m == nil {
 			logrus.Warn("Upd: failed to parse cache response, skipping message")
 			continue
@@ -200,7 +253,7 @@ func (u *UpdPayload) Bytes() []byte {
 	binary.LittleEndian.PutUint16(buf[idx:idx+2], u.DataLength)
 	idx += 2
 
-	copy(buf[idx:], u.Data)
+	copy(buf[idx:], u.Data[:u.DataLength])
 	return buf
 }
 
@@ -221,6 +274,7 @@ func ParseUpdPayload(buf []byte) (*UpdPayload, error) {
 	idx += 2
 
 	if (len(buf) - int(idx)) < int(upd.DataLength) {
+		logrus.Warn("Upd: payload invalid, too small")
 		return nil, errors.New("payload invalid")
 	}
 

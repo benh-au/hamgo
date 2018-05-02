@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"bytes"
+	"encoding/hex"
 
 	"github.com/Sirupsen/logrus"
 
@@ -160,6 +161,8 @@ func ParseContact(msg []byte) (*Contact, []byte) {
 	idx++
 
 	if len(msg) < idx+int(c.CallsignLength) {
+		logrus.Warnf("Contact: length too small for callsign, %d < %d", len(msg), idx+int(c.CallsignLength))
+		logrus.Debugf("Contact: buf:\n%s", hex.Dump(msg))
 		return nil, nil
 	}
 
@@ -170,6 +173,7 @@ func ParseContact(msg []byte) (*Contact, []byte) {
 	}
 
 	if len(msg) < idx+1 {
+		logrus.Warn("Contact: length too small for number ips")
 		return nil, nil
 	}
 
