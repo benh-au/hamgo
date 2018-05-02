@@ -170,6 +170,7 @@ func (h *Handler) ws(c echo.Context) error {
 				return
 			}
 
+			logrus.Debugf("REST: spreading msg:\n %+v", msg)
 			err = h.node.SpreadMessage(msg)
 			if err != nil {
 				logrus.WithError(err).Warn("REST: failed to send msg from ws")

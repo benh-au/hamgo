@@ -29,9 +29,9 @@ const (
 
 // ContactIP defines the ip address of the contact.
 type ContactIP struct {
-	Type   ContactIPType
-	Length uint8
-	Data   []byte
+	Type   ContactIPType `json:"type"`
+	Length uint8         `json:"length"`
+	Data   []byte        `json:"data"`
 }
 
 // Contact represents a source in the gossip protocol.

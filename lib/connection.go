@@ -137,7 +137,6 @@ func (c *Connection) connectionWorker() {
 		}
 
 		b, err := rd.ReadByte()
-		logrus.WithField("byte", b).Debug("Connection: read byte")
 
 		if err != nil {
 			logrus.WithError(err).Warn("Connection: failed to read byte, closing connection")
@@ -198,7 +197,6 @@ func (c *Connection) connectionWorker() {
 			continue
 		}
 
-		logrus.Debug("Connection: data byte")
 		buf[idx] = b
 		idx++
 	}

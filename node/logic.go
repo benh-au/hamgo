@@ -102,7 +102,7 @@ func (n *Logic) SpreadMessage(msg *protocol.Message) error {
 func (n *Logic) spreadCachedMessage(msg *protocol.Message) {
 	buf := msg.Bytes()
 
-	logrus.WithField("msg", msg).Debug("Logic: spreading cached message")
+	logrus.Debugf("Logic: spreading cached message\n%+v", msg)
 
 	for _, p := range n.peers {
 		// enqueue the message for the peer to be sent
