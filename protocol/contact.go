@@ -35,11 +35,11 @@ type ContactIP struct {
 
 // Contact represents a source in the gossip protocol.
 type Contact struct {
-	Type           ContactType
-	CallsignLength uint8
-	Callsign       []byte
-	NumberIPs      uint8
-	IPs            []ContactIP
+	Type           ContactType `json:"type"`
+	CallsignLength uint8       `json:"callsignLength"`
+	Callsign       []byte      `json:"callsign"`
+	NumberIPs      uint8       `json:"numberIPs"`
+	IPs            []ContactIP `json:"ips"`
 }
 
 // Bytes converts the ip address to bytes.

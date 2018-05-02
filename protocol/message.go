@@ -31,16 +31,16 @@ const (
 
 // Message is a message in the transport.
 type Message struct {
-	Version       uint16
-	SeqCounter    uint64
-	TTL           uint8
-	Flags         uint8
-	Source        Contact
-	PathLength    uint16
-	Path          string
-	PayloadType   PayloadType
-	PayloadLenght uint32
-	Payload       []byte
+	Version       uint16      `json:"version"`
+	SeqCounter    uint64      `json:"sequence"`
+	TTL           uint8       `json:"ttl"`
+	Flags         uint8       `json:"flags"`
+	Source        Contact     `json:"source"`
+	PathLength    uint16      `json:"pathLength"`
+	Path          string      `json:"path"`
+	PayloadType   PayloadType `json:"payloadType"`
+	PayloadLenght uint32      `json:"payloadLength"`
+	Payload       []byte      `json:"payload"`
 }
 
 // Bytes converts the message into a byte buffer.

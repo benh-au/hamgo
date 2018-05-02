@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net"
+	"net/http"
 	"strconv"
 	"sync"
 
@@ -17,7 +18,11 @@ import (
 const protocolVersion = 1
 
 var (
-	upgrader = websocket.Upgrader{}
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 )
 
 // spread a cqmessage
@@ -156,7 +161,24 @@ func (h *Handler) ws(c echo.Context) error {
 		}
 	}
 
-	// TODO: implement send support from websocket
+	go func() {
+		for !closed {
+			msg := &protocol.Message{}
+			err := ws.ReadJSON(msg)
+			if err != nil {
+				logrus.WithError(err).Warn("REST: failed to read incoming message")
+				continue
+			}
+
+			err = h.node.SpreadMessage(msg)
+			if err != nil {
+				logrus.WithError(err).Warn("REST: failed to send msg from ws")
+				continue
+			}
+
+			logrus.Info("REST: message from ws spread")
+		}
+	}()
 
 	cd := &node.MessageCallback{
 		Cb: cb,

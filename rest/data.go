@@ -2,7 +2,6 @@ package rest
 
 import (
 	"encoding/json"
-	"net"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/donothingloop/hamgo/protocol"
@@ -23,63 +22,12 @@ type CQMessage struct {
 	ACK      bool    `json:"ack,omitempty"`
 }
 
-func messageToCQ(msg *protocol.Message) string {
-	var ips []string
-
-	for _, v := range msg.Source.IPs {
-		switch v.Type {
-		case protocol.ContactIPv4:
-			nip := net.IP(v.Data)
-			ips = append(ips, nip.String())
-
-			// TODO: IPv6
-		}
-	}
-
-	cm := CQMessage{
-		Sequence: msg.SeqCounter,
-		Message:  string(msg.Payload),
-		Contact: Contact{
-			Callsign: string(msg.Source.Callsign),
-			Type:     msg.Source.Type,
-			IPs:      ips,
-		},
-		ACK: ((msg.Flags & protocol.FlagACK) != 0),
-	}
-
-	dat, err := json.Marshal(cm)
+func messageToJSON(msg *protocol.Message) string {
+	data, err := json.Marshal(msg)
 	if err != nil {
 		logrus.WithError(err).Warn("REST: failed to convert message to json")
 		return ""
 	}
 
-	return string(dat)
+	return string(data)
 }
-
-func messageToJSON(msg *protocol.Message) string {
-	switch msg.PayloadType {
-	case protocol.PayloadCQ:
-		return messageToCQ(msg)
-	}
-
-	return ""
-}
-
-/*
-	Example CQ message:
-
-	{
-		"sequence": 1,
-		"contact": {
-			"type": 0,
-			"ips": [
-				"44.143.25.1"
-			],
-			"callsign": "OE1VQS"
-		},
-		"message": "Test CQ"
-	}
-
-	Example CURL:
-	curl -H "Content-Type: application/json" -X POST -d '{"sequence": 1, "contact": { "type": 0, "ips": ["44.143.25.1"], "callsign": "OE1VQS"}, "message": "Test CQ"}' http://server:9125/api/spread/cq
-*/
