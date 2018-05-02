@@ -141,6 +141,11 @@ func (n *Logic) sendACK(msg *protocol.Message) {
 func pathContainsSegment(path string, segment string) bool {
 	tk := strings.Split(path, ";")
 	for _, t := range tk {
+		logrus.Debugf("Logic: path segment %s ?= %s", t, segment)
+		if t == "" {
+			continue
+		}
+
 		if t == segment {
 			return true
 		}
