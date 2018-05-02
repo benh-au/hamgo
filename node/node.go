@@ -2,7 +2,6 @@ package node
 
 import (
 	"errors"
-	"strings"
 	"sync"
 
 	"github.com/donothingloop/hamgo/lib"
@@ -168,8 +167,8 @@ func (n *Node) handleMessage(msg []byte, src *Peer) {
 		return
 	}
 
-	if strings.Contains(pmsg.Path, n.station.Callsign) {
-		logrus.Info("Node: path already contains this station, ignoring pacakge")
+	if pathContainsSegment(pmsg.Path, n.station.Callsign) {
+		logrus.Info("Node: path already contains this station, ignoring package")
 		return
 	}
 
