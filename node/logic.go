@@ -138,6 +138,17 @@ func (n *Logic) sendACK(msg *protocol.Message) {
 	n.SpreadMessage(&pmsg)
 }
 
+func pathContainsSegment(path string, segment string) bool {
+	tk := strings.Split(path, ";")
+	for _, t := range tk {
+		if t == segment {
+			return true
+		}
+	}
+
+	return false
+}
+
 // HandleMessage handles an incoming message from a peer.
 func (n *Logic) HandleMessage(msg []byte) {
 	logrus.Debug("Logic: parsing incoming message")
@@ -147,8 +158,8 @@ func (n *Logic) HandleMessage(msg []byte) {
 
 	logrus.Debug("Logic: handling incoming message")
 
-	if strings.Contains(m.Path, n.settingsStation.Callsign) {
-		logrus.Info("Logic: path already contains this station, ignoring pacakge")
+	if pathContainsSegment(m.Path, n.settingsStation.Callsign) {
+		logrus.Info("Logic: path already contains this station, ignoring package")
 		return
 	}
 
